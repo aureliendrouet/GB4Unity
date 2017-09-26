@@ -277,7 +277,7 @@ namespace StudioKurage.Emulator.Gameboy
                 //audio.wb(address, value);
                 return;
             }
-            if (address <= 0x7FFF) { // Write to ROM
+            if (address <= 0x7FFF) {
                 mbc.wb (address, value);
                 romBank = mbc.currentRomBank;
                 return;

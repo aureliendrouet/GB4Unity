@@ -80,20 +80,19 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDDEmA = (_) => { _.mmu.wb(_.de, _.a); _.m = 2; };
 
         // r = @pc         (load register from memory)
-        static Instruction LDrn_b = (_) => { _.b = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_c = (_) => { _.c = _.mmu.rb(_.pc); UnityEngine.Debug.LogFormat("{0:x4}", _.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_d = (_) => { _.d = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_e = (_) => { _.e = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_h = (_) => { _.h = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_l = (_) => { _.l = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
-        static Instruction LDrn_a = (_) => { _.a = _.mmu.rb(_.pc); _.pc ++; _.m = 2; };
+        static Instruction LDrn_b = (_) => { _.b = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_c = (_) => { _.c = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_d = (_) => { _.d = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_e = (_) => { _.e = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_h = (_) => { _.h = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_l = (_) => { _.l = _.mmu.rb(_.pc++); _.m = 2; };
+        static Instruction LDrn_a = (_) => { _.a = _.mmu.rb(_.pc++); _.m = 2; };
 
         // @r = @pc        (write memory from memory)
-        static Instruction LDHLmn = (_) => { _.mmu.wb(_.hl, _.mmu.rb(_.pc)); _.pc ++; _.m = 3; };
+        static Instruction LDHLmn = (_) => { _.mmu.wb(_.hl, _.mmu.rb(_.pc++)); _.m = 3; };
 
         // @@pc = r        (write memory from register)
         static Instruction LDmmA  = (_) => { _.mmu.wb(_.mmu.rw(_.pc), _.a); _.pc += 2; _.m = 4; };
-      //static Instruction LDmmHL = (_) => { _.mmu.ww(_.mmu.rw(_.pc),_.hl); _.pc += 2; _.m = 5; };
 
         // r = @@pc        (load register from memory)
         static Instruction LDAmm = (_) => { _.a = _.mmu.rb(_.mmu.rw(_.pc)); _.pc += 2;  _.m = 4; };
@@ -107,10 +106,10 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDAHLD = (_) => { _.a = _.mmu.rb(_.hl); _.hl --; _.m = 2; };
 
         // r = @pc + 0xff00
-        static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(_.mmu.rb(_.pc)); _.pc ++;  _.m = 3; };
+        static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(_.mmu.rb(_.pc++)); _.m = 3; };
 
         // @pc + 0xff00 = r
-        static Instruction LDIOnA = (_) => { _.mmu.wb(_.mmu.rb(_.pc), _.a); _.pc ++;  _.m = 3; };
+        static Instruction LDIOnA = (_) => { _.mmu.wb(_.mmu.rb(_.pc++), _.a); _.m = 3; };
 
         // r = @r + 0xff00
         static Instruction LDAIOC = (_) => { _.a = _.mmu.rb(_.c); _.m = 2; };
@@ -132,7 +131,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         // hl = sp + n
         static Instruction LDHLSPn = (_) => {
-            byte n = _.mmu.rb(_.pc); _.pc ++; ushort res = (ushort)(_.sp + n); _.hl = res;
+            byte n = _.mmu.rb(_.pc++); ushort res = (ushort)(_.sp + n); _.hl = res;
             _.zf = false; _.sf = false; _.hcf = ((_.sp ^ n ^ res) & 0x10) == 0x10; _.cf = ((_.sp ^ n ^ res) & 0x100) == 0x100;
             _.m = 3;
         };

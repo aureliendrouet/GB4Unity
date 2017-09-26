@@ -10,8 +10,8 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction ADDr_h = (_) => { ADD(_, _.h); };
         static Instruction ADDr_l = (_) => { ADD(_, _.l); };
         static Instruction ADDr_a = (_) => { ADD(_, _.a); };
-        static Instruction ADDHL  = (_) => { ADD(_, _.mmu.rb(_.hl));         _.m = 2; };
-        static Instruction ADDn   = (_) => { ADD(_, _.mmu.rb(_.pc)); _.pc++; _.m = 2; };
+        static Instruction ADDHL  = (_) => { ADD(_, _.mmu.rb(_.hl));   _.m = 2; };
+        static Instruction ADDn   = (_) => { ADD(_, _.mmu.rb(_.pc++)); _.m = 2; };
 
         static Instruction ADDHLBC = (_) => { ADDW(_, _.bc); };
         static Instruction ADDHLDE = (_) => { ADDW(_, _.de); };

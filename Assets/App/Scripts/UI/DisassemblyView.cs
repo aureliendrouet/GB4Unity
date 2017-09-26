@@ -14,8 +14,6 @@ namespace StudioKurage.Emulator.Gameboy
         [SerializeField] ScrollRect scroll;
         [SerializeField] InputField maxLines;
 
-        Queue<Text> lines = new Queue<Text> ();
-
         public void SetCpu (Cpu cpu)
         {
             disassembler = new Disassembler (cpu);
@@ -55,14 +53,11 @@ namespace StudioKurage.Emulator.Gameboy
             var line = instance.GetComponent<Text> ();
             line.text = value;
 
-            // keep
-            lines.Enqueue (line);
-
             // scroll down after a single frame
             StartCoroutine (ScrollDown ());
         }
 
-        IEnumerator ScrollDown()
+        IEnumerator ScrollDown ()
         {
             yield return 0;
             scroll.verticalNormalizedPosition = 0f;
@@ -70,7 +65,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         void RemoveLine ()
         {
-            var line = lines.Dequeue ();
+            var line = scroll.content.GetChild (0);
             GameObject.DestroyImmediate (line.gameObject);
         }
 
@@ -78,7 +73,7 @@ namespace StudioKurage.Emulator.Gameboy
         {
             int max = Convert.ToInt32 (maxLines.text);
 
-            int overflow = lines.Count - max;
+            int overflow = scroll.content.childCount - max;
 
             if (overflow > 0) {
                 for (int i = overflow; i > 0; i--) {
