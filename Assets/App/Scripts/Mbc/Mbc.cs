@@ -6,17 +6,17 @@ namespace StudioKurage.Emulator.Gameboy
     {
         protected byte[][] romBanks;
 
-        protected int currentRomBankIndex;
+        protected int romBankIndex;
 
-        public virtual byte[] currentRomBank {
+        public byte[] rom {
             get {
-                byte[] romBank = null;
+                return romBanks [0];
+            }
+        }
 
-                if (currentRomBankIndex < romBanks.Length) {
-                    romBank = romBanks [currentRomBankIndex];
-                }
-
-                return romBank;
+        public byte[] romBank {
+            get {
+                return romBanks [romBankIndex];
             }
         }
 
@@ -24,28 +24,23 @@ namespace StudioKurage.Emulator.Gameboy
         {
         }
 
-        public Mbc (byte[][]romBanks)
-        {
-            this.romBanks = romBanks;
-            this.currentRomBankIndex = 1;
-        }
-
-        public virtual byte rb (int address)
+        public virtual byte rb (ushort address)
         {
             return 0;
         }
 
-        public virtual void wb (int address, byte val)
+        public virtual void wb (ushort address, byte val)
         {
         }
 
-        public virtual void wr (int address, byte value)
-        {
-        }
-
-        public virtual byte rr (int address)
+        public virtual byte rrb (ushort address)
         {
             return 0;
+        }
+
+        public virtual void rwb (ushort address, byte value)
+        {
         }
     }
 }
+

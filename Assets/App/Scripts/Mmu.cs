@@ -56,16 +56,16 @@ namespace StudioKurage.Emulator.Gameboy
         protected byte[] wram = new byte[8192];
 
         // A000-BFFF, cartridge external ram
-        // skip
+        // managed by mbc
 
         // 8000-9FFF - video ram
         protected byte[] vram = new byte[8192];
 
         // 4000-7FFF - cartridge rom, other banks
-        protected byte[] romBank;
+        // managed by mbc
 
         // 0000-3FFF - cartridge rom, bank 0
-        protected byte[] rom;
+        // managed by mbc
 
         // bios (not used)
         byte[] bios = new byte[] { 
@@ -151,8 +151,6 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void LoadRom (byte[] rom)
         {
-            this.rom = rom;
-
             byte cartridgeType = rom [Address_CartridgeType];
             byte romSize = rom [Address_RomSize];
             byte ramSize = rom [Address_RamSize];
@@ -177,7 +175,6 @@ namespace StudioKurage.Emulator.Gameboy
             }
 
             mbc = GetMbc (cartridgeType, romBanks, ramBanks);
-            romBank = mbc.currentRomBank;
         }
 
         protected void GetRomBankInfo (byte romSize, out int romBankCount)
@@ -230,6 +227,10 @@ namespace StudioKurage.Emulator.Gameboy
                 break;
             case 0x01:
                 mbc = new Mbc1 (romBanks);
+//            case 0x02:
+//                mbc = new Mbc1 (romBanks, ramBanks);
+//            case 0x03:
+//                mbc = new Mbc1 (romBanks, ramBanks, true);
                 break;
             default:
                 throw new Exception ("Cartridge not implemented");
@@ -241,7 +242,7 @@ namespace StudioKurage.Emulator.Gameboy
         private void wbr (ushort address, byte value)
         {
             if ((address >= 0xA000) && (address <= 0xBFFF)) {
-                mbc.wr ((ushort)(address - 0xA000), value);
+                mbc.rwb ((ushort)(address - 0xA000), value);
             } else {
                 byte[] mem;
                 ushort resolvedAddress;
@@ -258,9 +259,10 @@ namespace StudioKurage.Emulator.Gameboy
             }
             if (address >= 0xFF10 && address <= 0xFF3F) {
 //                return audio.rr(address);
+                return 0;
             }
             if ((address >= 0xA000) && (address <= 0xBFFF)) {
-                return mbc.rr ((ushort)(address - 0xA000));
+                return mbc.rrb ((ushort)(address - 0xA000));
             }
 
             byte[] memory;
@@ -279,11 +281,10 @@ namespace StudioKurage.Emulator.Gameboy
             }
             if (address <= 0x7FFF) {
                 mbc.wb (address, value);
-                romBank = mbc.currentRomBank;
                 return;
             }
             if ((address >= 0xA000) && (address <= 0xBFFF)) {
-                mbc.wr ((ushort)(address - 0xA000), value);
+                mbc.rwb ((ushort)(address - 0xA000), value);
                 return;
             }
 
@@ -339,12 +340,12 @@ namespace StudioKurage.Emulator.Gameboy
         void ResolveMemoryAddress (ushort address, out byte[] memory, out ushort resolvedAddress)
         {
             if (address <= 0x3FFF) {
-                memory = rom;
+                memory = mbc.rom;
                 resolvedAddress = address;
                 return;
             }
             if ((address >= 0x4000) && (address <= 0x7FFF)) {
-                memory = romBank;
+                memory = mbc.romBank;
                 resolvedAddress = (ushort)(address - 0x4000);
                 return;
             }
