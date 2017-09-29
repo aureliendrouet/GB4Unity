@@ -51,16 +51,6 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction SBCHL  = (_) => { SBC(_, _.mmu.rb(_.hl));   _.m = 2; };
         static Instruction SBCn   = (_) => { SBC(_, _.mmu.rb(_.pc++)); _.m = 2; };
 
-        static Instruction CPr_b = (_) => { CP(_, _.b); };
-        static Instruction CPr_c = (_) => { CP(_, _.c); };
-        static Instruction CPr_d = (_) => { CP(_, _.d); };
-        static Instruction CPr_e = (_) => { CP(_, _.e); };
-        static Instruction CPr_h = (_) => { CP(_, _.h); };
-        static Instruction CPr_l = (_) => { CP(_, _.l); };
-        static Instruction CPr_a = (_) => { CP(_, _.a); };
-        static Instruction CPHL  = (_) => { CP(_, _.mmu.rb(_.hl));   _.m = 2; };
-        static Instruction CPn   = (_) => { CP(_, _.mmu.rb(_.pc++)); _.m = 2; };
-
         static Instruction ANDr_b = (_) => { AND(_, _.b); };
         static Instruction ANDr_c = (_) => { AND(_, _.c); };
         static Instruction ANDr_d = (_) => { AND(_, _.d); };
@@ -130,8 +120,6 @@ namespace StudioKurage.Emulator.Gameboy
         static void SUB(Cpu _, byte n) { byte a = _.a; _.a = (byte)(a - n); _.zf = _.a == 0; _.sf = true; _.hcf = ((_.a ^ n ^ a) & 0x10) != 0; _.cf = (a - n) < 0; _.m = 1; }
 
         static void SBC(Cpu _, byte n) { int c = _.cf ? 1 : 0; int i = _.a - n - c; _.zf = ((byte)i) == 0; _.sf = true; _.hcf = (((_.a & 0x0F) - (n & 0x0F) - c) < 0x00); _.cf = i < 0x00; _.a = (byte)i;_.m = 1; }
-
-        static void CP(Cpu _, byte n)  { byte i = (byte)(_.a - n); _.zf = _.a == n; _.sf = true; _.hcf = ((i ^ n ^ _.a) & 0x10) != 0; _.cf = _.a < n; _.m = 1; }
 
         static void AND(Cpu _, byte n) { _.a &= n; _.zf = _.a == 0; _.sf = false; _.hcf = true; _.cf = false; _.m = 1; }
 

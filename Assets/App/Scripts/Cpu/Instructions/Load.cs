@@ -4,7 +4,7 @@ namespace StudioKurage.Emulator.Gameboy
     public partial class Cpu
     {
         #region 8 bits loads
-        // r = r           (load register from register)
+        // r = r           (put register to register)
         static Instruction LDrr_bb = (_) => { _.m = 1; };
         static Instruction LDrr_bc = (_) => { _.b = _.c; _.m = 1; };
         static Instruction LDrr_bd = (_) => { _.b = _.d; _.m = 1; };
@@ -55,7 +55,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDrr_al = (_) => { _.a = _.l; _.m = 1; };
         static Instruction LDrr_aa = (_) => {            _.m = 1; };
 
-        // r = @r          (load register from memory)
+        // r = @hl          (put memory to register)
         static Instruction LDrHLm_b = (_) => { _.b = _.mmu.rb(_.hl); _.m = 2; };
         static Instruction LDrHLm_c = (_) => { _.c = _.mmu.rb(_.hl); _.m = 2; };
         static Instruction LDrHLm_d = (_) => { _.d = _.mmu.rb(_.hl); _.m = 2; };
@@ -67,7 +67,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDABCm = (_) => { _.a = _.mmu.rb(_.bc); _.m = 2; };
         static Instruction LDADEm = (_) => { _.a = _.mmu.rb(_.de); _.m = 2; };
 
-        // @r = r          (write memory from register)
+        // @hl = r          (put register to memory)
         static Instruction LDHLmr_b = (_) => { _.mmu.wb(_.hl, _.b); _.m = 2; };
         static Instruction LDHLmr_c = (_) => { _.mmu.wb(_.hl, _.c); _.m = 2; };
         static Instruction LDHLmr_d = (_) => { _.mmu.wb(_.hl, _.d); _.m = 2; };
@@ -79,7 +79,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDBCmA = (_) => { _.mmu.wb(_.bc, _.a); _.m = 2; };
         static Instruction LDDEmA = (_) => { _.mmu.wb(_.de, _.a); _.m = 2; };
 
-        // r = @pc         (load register from memory)
+        // r = @pc         (put memory to register)
         static Instruction LDrn_b = (_) => { _.b = _.mmu.rb(_.pc++); _.m = 2; };
         static Instruction LDrn_c = (_) => { _.c = _.mmu.rb(_.pc++); _.m = 2; };
         static Instruction LDrn_d = (_) => { _.d = _.mmu.rb(_.pc++); _.m = 2; };
@@ -88,46 +88,47 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDrn_l = (_) => { _.l = _.mmu.rb(_.pc++); _.m = 2; };
         static Instruction LDrn_a = (_) => { _.a = _.mmu.rb(_.pc++); _.m = 2; };
 
-        // @r = @pc        (write memory from memory)
+        // @hl = @pc        (put memory to memory)
         static Instruction LDHLmn = (_) => { _.mmu.wb(_.hl, _.mmu.rb(_.pc++)); _.m = 3; };
 
-        // @@pc = r        (write memory from register)
+        // @@pc = r        (put memory to memory)
         static Instruction LDmmA  = (_) => { _.mmu.wb(_.mmu.rw(_.pc), _.a); _.pc += 2; _.m = 4; };
 
-        // r = @@pc        (load register from memory)
+        // r = @@pc        (put memory to register)
         static Instruction LDAmm = (_) => { _.a = _.mmu.rb(_.mmu.rw(_.pc)); _.pc += 2;  _.m = 4; };
 
-        // @hl = a; hl + n
+        // @hl = a; hl++ || hl--
         static Instruction LDHLIA = (_) => { _.mmu.wb(_.hl, _.a); _.hl ++; _.m = 2; };
         static Instruction LDHLDA = (_) => { _.mmu.wb(_.hl, _.a); _.hl --; _.m = 2; };
 
-        // r = @hl; hl + n
+        // r = @hl; hl++ || hl--
         static Instruction LDAHLI = (_) => { _.a = _.mmu.rb(_.hl); _.hl ++; _.m = 2; };
         static Instruction LDAHLD = (_) => { _.a = _.mmu.rb(_.hl); _.hl --; _.m = 2; };
 
-        // r = @pc + 0xff00
+        // r = @@pc        (put memory to register)
         static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(_.mmu.rb(_.pc++)); _.m = 3; };
 
-        // @pc + 0xff00 = r
+        // @@pc = r        (put register to memory)
         static Instruction LDIOnA = (_) => { _.mmu.wb(_.mmu.rb(_.pc++), _.a); _.m = 3; };
 
-        // r = @r + 0xff00
+        // r = @r          (put memory to register)
         static Instruction LDAIOC = (_) => { _.a = _.mmu.rb(_.c); _.m = 2; };
 
-        // @r + 0xff00 = r
+        // @r = r          (put register to memory)
         static Instruction LDIOCA = (_) => { _.mmu.wb(_.c, _.a); _.m = 2; };
-
-        static Instruction LDmmSP = (_) => { ushort w = _.mmu.rw(_.pc); _.pc += 2; _.mmu.ww(w, _.sp); _.m = 5; };
         #endregion
 
         #region 16 bits loads
-        // r = @pc         (load register from memory)
+        // r = @pc         (put memory to register)
         static Instruction LDBCnn = (_) => { _.bc = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
         static Instruction LDDEnn = (_) => { _.de = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
         static Instruction LDHLnn = (_) => { _.hl = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
 
-        // st = @pc        (load stack pointer from memory)
+        // st = @pc        (put memory to stack pointer)
         static Instruction LDSPnn = (_) => { _.sp = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
+
+        // @pc = sp        (put stack pointer to memory)
+        static Instruction LDmmSP = (_) => { ushort w = _.mmu.rw(_.pc); _.pc += 2; _.mmu.ww(w, _.sp); _.m = 5; };
 
         // hl = sp + n
         static Instruction LDHLSPn = (_) => {
@@ -136,7 +137,7 @@ namespace StudioKurage.Emulator.Gameboy
             _.m = 3;
         };
 
-        // sp = hl
+        // sp = hl         (put hl to sp
         static Instruction LDSPHL = (_) => { _.sp = _.hl; _.m = 2; };
         #endregion
     }
