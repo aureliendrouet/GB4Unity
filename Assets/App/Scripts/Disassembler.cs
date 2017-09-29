@@ -40,7 +40,6 @@ namespace StudioKurage.Emulator.Gameboy
             }
         }
 
-        // Ref. http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html
         public static string[] instructions = new string[] {
         
             // 0x00 .. 0xF

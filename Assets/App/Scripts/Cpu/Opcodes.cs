@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace StudioKurage.Emulator.Gameboy
 {
+    // ref. http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html
+    // ref. http://www.devrs.com/gb/files/GBCPU_Instr.html
     public partial class Cpu
     {
         // Single Byte Instruction Set
         // 0xXX
-        // http://www.devrs.com/gb/files/GBCPU_Instr.html
         static Instruction[] map = new Instruction[] {
             /*      0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F         */
             /* 0 */ NOP,      LDBCnn,   LDBCmA,   INCBC,    INCr_b,   DECr_b,   LDrn_b,   RLCA,     LDmmSP,   ADDHLBC,  LDABCm,   DECBC,    INCr_c,   DECr_c,   LDrn_c,   RRCA,
