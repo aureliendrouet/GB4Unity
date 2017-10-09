@@ -16,12 +16,11 @@ namespace StudioKurage.Emulator.Gameboy
         const string UInt8RegisterTemplate = "{0:X2}";
         const string UInt16RegisterTemplate = "{0:X4}";
 
-        protected Cpu cpu;
+        Cpu cpu;
 
-        public void SetCpu (Cpu _)
+        public void Setup (Cpu _)
         {
             cpu = _;
-            Refresh ();
         }
 
         public void UpdateRegisterA (string value)
@@ -84,55 +83,55 @@ namespace StudioKurage.Emulator.Gameboy
             Refresh ();
         }
 
-        public void UpdateClockMC(string value)
+        public void UpdateClockMC (string value)
         {
             cpu.mc = Convert.ToInt32 (value);
             Refresh ();
         }
 
-        public void UpdateClockIMC(string value)
+        public void UpdateClockIMC (string value)
         {
             cpu.imc = Convert.ToInt32 (value);
             Refresh ();
         }
 
-        public void UpdateFlagZF(string value)
+        public void UpdateFlagZF (string value)
         {
             cpu.zf = value == "1" ? true : false;
             Refresh ();
         }
 
-        public void UpdateFlagSF(string value)
+        public void UpdateFlagSF (string value)
         {
             cpu.sf = value == "1" ? true : false;
             Refresh ();
         }
 
-        public void UpdateFlagHCF(string value)
+        public void UpdateFlagHCF (string value)
         {
             cpu.hcf = value == "1" ? true : false;
             Refresh ();
         }
 
-        public void UpdateFlagCF(string value)
+        public void UpdateFlagCF (string value)
         {
             cpu.cf = value == "1" ? true : false;
             Refresh ();
         }
 
-        public void UpdateSignalIME(string value)
+        public void UpdateSignalIME (string value)
         {
             cpu.ime = Convert.ToInt32 (value);
             Refresh ();
         }
 
-        public void UpdateSignalHLT(string value)
+        public void UpdateSignalHLT (string value)
         {
             cpu.hlt = Convert.ToInt32 (value);
             Refresh ();
         }
 
-        public void UpdateSignalSTP(string value)
+        public void UpdateSignalSTP (string value)
         {
             cpu.stp = Convert.ToInt32 (value);
             Refresh ();
@@ -155,13 +154,13 @@ namespace StudioKurage.Emulator.Gameboy
             uint16Registers [1].text = String.Format (UInt16RegisterTemplate, cpu.sp);
 
             // flags
-            flags [0].text = cpu.zf  ? "1" : "0";
-            flags [1].text = cpu.sf  ? "1" : "0";
+            flags [0].text = cpu.zf ? "1" : "0";
+            flags [1].text = cpu.sf ? "1" : "0";
             flags [2].text = cpu.hcf ? "1" : "0";
-            flags [3].text = cpu.cf  ? "1" : "0";
+            flags [3].text = cpu.cf ? "1" : "0";
 
             // clocks
-            clocks[0].text = cpu.mc.ToString ();
+            clocks [0].text = cpu.mc.ToString ();
 
             // signals
             signals [0].text = cpu.ime.ToString ();

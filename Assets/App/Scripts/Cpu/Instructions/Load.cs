@@ -91,44 +91,44 @@ namespace StudioKurage.Emulator.Gameboy
         // @hl = @pc        (put memory to memory)
         static Instruction LDHLmn = (_) => { _.mmu.wb(_.hl, _.mmu.rb(_.pc++)); _.m = 3; };
 
-        // @@pc = r        (put memory to memory)
+        // @@pc = a        (put memory to memory)
         static Instruction LDmmA  = (_) => { _.mmu.wb(_.mmu.rw(_.pc), _.a); _.pc += 2; _.m = 4; };
 
-        // r = @@pc        (put memory to register)
+        // a = @@pc        (put memory to register)
         static Instruction LDAmm = (_) => { _.a = _.mmu.rb(_.mmu.rw(_.pc)); _.pc += 2;  _.m = 4; };
 
         // @hl = a; hl++ || hl--
         static Instruction LDHLIA = (_) => { _.mmu.wb(_.hl, _.a); _.hl ++; _.m = 2; };
         static Instruction LDHLDA = (_) => { _.mmu.wb(_.hl, _.a); _.hl --; _.m = 2; };
 
-        // r = @hl; hl++ || hl--
+        // a = @hl; hl++ || hl--
         static Instruction LDAHLI = (_) => { _.a = _.mmu.rb(_.hl); _.hl ++; _.m = 2; };
         static Instruction LDAHLD = (_) => { _.a = _.mmu.rb(_.hl); _.hl --; _.m = 2; };
 
-        // r = @@pc        (put memory to register)
+        // a = @@pc        (put memory to register)
         static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(_.mmu.rb(_.pc++)); _.m = 3; };
 
-        // @@pc = r        (put register to memory)
+        // @@pc = a        (put register to memory)
         static Instruction LDIOnA = (_) => { _.mmu.wb(_.mmu.rb(_.pc++), _.a); _.m = 3; };
 
-        // r = @r          (put memory to register)
+        // a = @c          (put memory to register)
         static Instruction LDAIOC = (_) => { _.a = _.mmu.rb(_.c); _.m = 2; };
 
-        // @r = r          (put register to memory)
+        // @c = a          (put register to memory)
         static Instruction LDIOCA = (_) => { _.mmu.wb(_.c, _.a); _.m = 2; };
         #endregion
 
         #region 16 bits loads
-        // r = @pc         (put memory to register)
+        // rr = @pc        (put memory to register)
         static Instruction LDBCnn = (_) => { _.bc = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
         static Instruction LDDEnn = (_) => { _.de = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
         static Instruction LDHLnn = (_) => { _.hl = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
 
-        // st = @pc        (put memory to stack pointer)
+        // sp = @pc        (put memory to stack pointer)
         static Instruction LDSPnn = (_) => { _.sp = _.mmu.rw(_.pc); _.pc += 2;  _.m = 3; };
 
         // @pc = sp        (put stack pointer to memory)
-        static Instruction LDmmSP = (_) => { ushort w = _.mmu.rw(_.pc); _.pc += 2; _.mmu.ww(w, _.sp); _.m = 5; };
+        static Instruction LDmmSP = (_) => { _.mmu.ww(_.mmu.rw(_.pc), _.sp); _.pc += 2; _.m = 5; };
 
         // hl = sp + n
         static Instruction LDHLSPn = (_) => {

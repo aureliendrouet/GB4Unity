@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections;
 
-namespace StudioKurage.Emulator.Gameboy {
-    // central processing unit
-    // sharp LR35902
+namespace StudioKurage.Emulator.Gameboy
+{
+    // central processing unit (sharp LR35902)
     public partial class Cpu
     {
         // memory management unit
         public Mmu mmu;
 
-        public void Boot (Mmu mmu)
+        public Cpu (Mmu mmu)
         {
-            Reset ();
             this.mmu = mmu;
-            this.mmu.biosActive = true;
         }
 
         public void Reset ()
@@ -22,7 +20,7 @@ namespace StudioKurage.Emulator.Gameboy {
             bc = 0x0013;
             de = 0x00D8;
             hl = 0x014D;
-            pc = 0x100;
+            pc = (ushort)(mmu.biosActive ? 0x0000 : 0x0100);
             sp = 0xFFFE;
             mc = 0;
             cc = 0;
@@ -30,24 +28,26 @@ namespace StudioKurage.Emulator.Gameboy {
             icc = 0;
         }
 
-        public ushort ReadOpcode()
+        public ushort ReadOpcode ()
         {
             return mmu.rw (pc);
         }
 
         public void ExecNextOpcode ()
         {
-            byte opcode = mmu.rb (pc ++);
+            byte opcode = mmu.rb (pc++);
             ExecOpcode (opcode);
         }
 
-        public void ExecOpcode(byte opcode)
+        public void ExecOpcode (byte opcode)
         {
             var instr = map [opcode];
             instr (this);
             mc += imc;
             cc += icc;
-            if (mmu.biosActive && pc == 0x0100) mmu.biosActive = false;
+            if (mmu.biosActive && pc == 0x0100) {
+                mmu.biosActive = false;
+            }
         }
 
         public ushort opcode {
@@ -56,6 +56,6 @@ namespace StudioKurage.Emulator.Gameboy {
             }
         }
 
-        delegate void Instruction(Cpu Cpu);
+        delegate void Instruction (Cpu Cpu);
     }
 }

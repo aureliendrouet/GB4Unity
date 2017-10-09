@@ -5,7 +5,7 @@ namespace StudioKurage.Emulator.Gameboy
     {
         #region 8 bits registers
         public byte a; // accumulator register
-        public byte f; // flag register
+        public byte f; // status register
 
         public byte b; // used as a 8-bit counter
         public byte c; // used to interface with hardware ports

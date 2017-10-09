@@ -12,14 +12,15 @@ namespace StudioKurage.Emulator.Gameboy
         [SerializeField] Transform linkContainer;
         [SerializeField] InputField page;
 
-        Mmu mmu;
         InputField[] inputs;
         Button[] buttons;
         string[] links = new string[] { "00", "40", "80", "A0", "C0", "FE", "FF", "FF", "FF" };
 
-        public void SetMmu (Mmu mmu)
+        Mmu mmu;
+
+        public void Setup (Mmu _)
         {
-            this.mmu = mmu;
+            mmu = _;
         }
 
         void Awake ()

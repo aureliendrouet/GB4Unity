@@ -15,7 +15,7 @@ using System.IO;
 // --------------------------- FF00
 // Empty but unusable for I/O
 // --------------------------- FEA0
-// Sprite Attrib Memory (OAM)
+// Object Attributes Memory
 // --------------------------- FE00
 // Echo of 8kB Internal RAM
 // --------------------------- E000
@@ -59,7 +59,7 @@ namespace StudioKurage.Emulator.Gameboy
         // managed by mbc
 
         // 8000-9FFF - video ram
-        protected byte[] vram = new byte[8192];
+        public byte[] vram = new byte[8192];
 
         // 4000-7FFF - cartridge rom, other banks
         // managed by mbc
@@ -67,7 +67,7 @@ namespace StudioKurage.Emulator.Gameboy
         // 0000-3FFF - cartridge rom, bank 0
         // managed by mbc
 
-        // bios (not used)
+        // bios
         byte[] bios = new byte[] { 
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
             0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
@@ -87,7 +87,7 @@ namespace StudioKurage.Emulator.Gameboy
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50
         };
 
-        public bool biosActive = false;
+        public bool biosActive;
 
         // Memory Bank Controller
         protected Mbc mbc;
@@ -95,10 +95,11 @@ namespace StudioKurage.Emulator.Gameboy
         // Rom Bank Length
         const int RomBankLength = 0x4000;
 
-        // Special Addresses
-        const int Address_CartridgeType = 0x0147;
-        const int Address_RomSize = 0x0148;
-        const int Address_RamSize = 0x0149;
+        public bool lcd {
+            get {
+                return (rb (0xFF40) & 0x80) == 0x80;
+            }
+        }
 
         public Mmu ()
         {
@@ -151,9 +152,9 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void LoadRom (byte[] rom)
         {
-            byte cartridgeType = rom [Address_CartridgeType];
-            byte romSize = rom [Address_RomSize];
-            byte ramSize = rom [Address_RamSize];
+            byte cartridgeType = rom [Address.CartridgeType];
+            byte romSize = rom [Address.RomSize];
+            byte ramSize = rom [Address.RamSize];
 
             int romBankCount, ramBankCount, ramLength;
 

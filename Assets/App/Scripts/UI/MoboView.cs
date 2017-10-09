@@ -17,18 +17,18 @@ namespace StudioKurage.Emulator.Gameboy
         [SerializeField] UnityEvent beforeOpcodeExecuted;
         [SerializeField] UnityEvent afterOpcodeExecuted;
 
-        protected Cpu cpu;
+        protected Mobo mobo;
 
-        public void SetCpu (Cpu _)
+        public void Setup (Mobo _)
         {
-            cpu = _;
+            mobo = _;
         }
 
         public void ExecuteOpCode ()
         {
             byte opcode = StringUtil.HexToByte (opcodeInputField.text);
 
-            cpu.ExecOpcode (opcode);
+            mobo.cpu.ExecOpcode (opcode);
 
             opcodeInputField.text = "";
         }
@@ -36,7 +36,7 @@ namespace StudioKurage.Emulator.Gameboy
         public void ExecuteNextOpcode ()
         {
             beforeOpcodeExecuted.Invoke ();
-            cpu.ExecNextOpcode ();
+            mobo.cpu.ExecNextOpcode ();
             afterOpcodeExecuted.Invoke ();
         }
 

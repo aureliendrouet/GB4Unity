@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StudioKurage.Emulator.Gameboy
 {
-    public class Gameboy : MonoBehaviour
+    public class ViewController : MonoBehaviour
     {
         [SerializeField] string romName;
 
@@ -15,11 +15,22 @@ namespace StudioKurage.Emulator.Gameboy
         [SerializeField] MmuView mmuView;
         [SerializeField] DisassemblyView disassemblyView;
 
-        Cpu cpu;
-        Mmu mmu;
+        Mobo mobo;
+        Disassembler disassembler;
 
         void Start ()
         {
+            // create
+            mobo = new Mobo ();
+            disassembler = new Disassembler (mobo.cpu);
+
+            // setup view
+            moboView.Setup (mobo);
+            cpuView.Setup (mobo.cpu);
+            mmuView.Setup (mobo.mmu);
+            disassemblyView.Setup (disassembler);
+
+            // load default rom
             string filename = string.Format ("{0}/App/Resources/Roms/{1}.gb", Application.dataPath, romName);
 
             if (!File.Exists (filename)) {
@@ -29,16 +40,7 @@ namespace StudioKurage.Emulator.Gameboy
 
             byte[] rom = File.ReadAllBytes (filename);
 
-            mmu = new Mmu ();
-            mmu.LoadRom (rom);
-
-            cpu = new Cpu ();
-            cpu.Boot (mmu);
-
-            moboView.SetCpu (cpu);
-            cpuView.SetCpu (cpu);
-            mmuView.SetMmu (mmu);
-            disassemblyView.SetCpu (cpu);
+            mobo.LoadRom (rom);
         }
     }
 }

@@ -8,15 +8,15 @@ namespace StudioKurage.Emulator.Gameboy
 {
     public class DisassemblyView : MonoBehaviour
     {
-        Disassembler disassembler;
-
         [SerializeField] GameObject linePrefab;
         [SerializeField] ScrollRect scroll;
         [SerializeField] InputField maxLines;
 
-        public void SetCpu (Cpu cpu)
+        Disassembler disassembler;
+
+        public void Setup (Disassembler _)
         {
-            disassembler = new Disassembler (cpu);
+            disassembler = _;
         }
 
         public void Disassemble ()
