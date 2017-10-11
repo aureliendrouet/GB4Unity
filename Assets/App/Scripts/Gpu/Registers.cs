@@ -48,14 +48,14 @@ namespace StudioKurage.Emulator.Gameboy
 
         enum LcdcFlag : byte
         {
-            BackgroundEnabled = 0x01,
-            ForegroundEnabled     = 0x02,
-            TileSizeSelection = 0x04,
-            BackgroundTileIndexBankSelection = 0x08,
-            BackgroundTileDataBankSelection = 0x10,
-            WindowEnabled     = 0x20,
-            WindowTileIndexBankSelection = 0x40,
-            LcdEnabled        = 0x80,
+            BackgroundEnabled          = 0x01,
+            ForegroundEnabled          = 0x02,
+            TileSizeSelection          = 0x04,
+            BackgroundTilemapSelection = 0x08,
+            BackgroundTilesetSelection = 0x10,
+            WindowEnabled              = 0x20,
+            WindowTilemapSelection     = 0x40,
+            LcdEnabled                 = 0x80,
         }
 
         bool lcdEnabled {
@@ -81,23 +81,23 @@ namespace StudioKurage.Emulator.Gameboy
 
         bool backgroundTilesetSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTileDataBankSelection);
+                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTilesetSelection);
             }
         }
 
         bool backgroundTilemapSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTileIndexBankSelection);
+                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTilemapSelection);
             }
         }
 
         bool windowTilemapSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.WindowTileIndexBankSelection);
+                return HasFlag (lcdc, (byte)LcdcFlag.WindowTilemapSelection);
             }
         }
 
-        bool largeSprite {
+        bool largeTile {
             get {
                 return HasFlag (lcdc, (byte)LcdcFlag.TileSizeSelection);
             }

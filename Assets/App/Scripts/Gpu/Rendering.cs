@@ -63,12 +63,8 @@ namespace StudioKurage.Emulator.Gameboy
         const int BitsPerByte = 8;
         const int BitsPerAddress = 16;
 
-        const int SpriteDataSize = 0x04;
-
-        const int MaxSpriteCount = 40;
 
         Color[] backgroundPalette = new Color[4];
-        Color[] spritePalette = new Color[4];
 
         void RenderScanline ()
         {
@@ -82,7 +78,7 @@ namespace StudioKurage.Emulator.Gameboy
                 }
 
                 if (foregroundEnabled) {
-                    RenderSprites ();
+                    RenderObjects ();
                 }
             }
         }
@@ -212,102 +208,36 @@ namespace StudioKurage.Emulator.Gameboy
             }
         }
 
-        void RenderSprites ()
-        {
-            int spriteWidth = 8;
-            int spriteHeight = (largeSprite ? 16 : 8);
-
-            for (int spriteCounter = MaxSpriteCount - 1; spriteCounter >= 0; --spriteCounter) {
-
-                var sa = ReadSpriteAttributes (spriteCounter, spriteWidth, spriteHeight);
-
-                // check if the sprite is not on the screen
-                if (sa.x >= WindowWidth || sa.x <= -spriteWidth || sa.y >= WindowHeight || sa.y <= -spriteHeight) {
-                    continue;
-                }
-
-                byte tileY = (byte)(ly - sa.y);
-
-                // check if it is not on the current ly
-                if (sa.y > (short)ly || tileY >= spriteWidth) {
-                    continue;
-                }
-
-                // update palette
-                byte palette = mmu.rb (sa.paletteSelection ? Address.SpriteTilemapA : Address.SpriteTilemapB);
-
-                for (int i = 0; i < 4; ++i) {
-                    spritePalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
-                }
-
-                // find tile address
-                ushort spriteTileAddress;
-
-                if (largeSprite) {
-                    if (sa.flipY) {
-                        tileY = (byte)(15 - tileY);
-                    }
-
-                    // check which 8x8 tile has to be used
-                    if (tileY < 8) {
-                        spriteTileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (sa.tileIndex & 0xFE)); // Upper tile, ignore LSB
-                    } else {
-                        spriteTileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (sa.tileIndex | 0x01)); // Lower tile, set LSB
-                        tileY -= 8;
-                    }
-                } else {
-                    if (sa.flipY) {
-                        tileY = (byte)(7 - tileY);
-                    }
-
-                    spriteTileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * sa.tileIndex);
-                }
-
-                for (int x = 0; x < spriteWidth; ++x) {
-                    if (sa.x + x < 0 || sa.x + x >= WindowWidth) {
-                        continue;
-                    }
-
-                    byte pixel = ReadTile (spriteTileAddress, (byte)(sa.flipX ? (7 - x) : x), tileY); // 0 = transparency
-
-                    if (pixel > 0 && (sa.priority || (texture.GetPixel (sa.x + x, ly) == backgroundPalette [0]))) {
-                        texture.SetPixel (sa.x + x, ly, spritePalette [pixel]);
-                    }
-                }
-            }
-        }
-
         #endregion
 
-        #region Sprite Attributes
-
-        // Sprite attributes are read from OAM
+        #region Foreground
+        // Object attributes are read from OAM
         // Used for drawing sprites or objects (OBJ)
         // There can be up to 40 OBJs
         // OAM RAM $FE00 - $FE9F
         // 10 OBJs can be displayed on the same Y line
         // Display data for OBH characters is stored in OAM $FE00 - $FE9F
-        // y-axis coordinate (1 byte)
-        // x-axis coordinate (1 byte)
-        // character code - tile number (1 byte)
-        // attribute data (1 byte)
-        struct SpriteAttributes
+        // - y-axis coordinate (1 byte)
+        // - x-axis coordinate (1 byte)
+        // - character code (1 byte)
+        // - attribute data (1 byte)
+        Color[] objectPalette = new Color[4];
+
+        const int ObjectDataSize = 0x04;
+        const int MaxObjectCount = 40;
+
+        struct ObjectAttributes
         {
-            public short y;
-            public short x;
-            public byte tileIndex;
-            public bool priority;
-            public bool flipX;
-            public bool flipY;
-            public bool paletteSelection;
+            public short y;               // LCD x-coordinate
+            public short x;               // LCD y-coordinate
+            public byte characterCode;    // CHR code
+            public bool paletteSelection; // palette selection
+            public bool flipX;            // horizontal flip flag
+            public bool flipY;            // vertical flip flag
+            public bool priority;         // display priority (0: priority to OBJ, 1: priority to BG)
         }
 
-        const byte Offset_Sprite_Y             = 0x00;
-        const byte Offset_Sprite_X             = 0x01;
-        const byte Offset_Sprite_TileIndex     = 0x02;
-        const byte Offset_Sprite_AttributeData = 0x03;
-
-        enum SpriteAttributeFlag : byte
+        enum ObjectAttributeFlag : byte
         {
             PaletteSelection = 0x10,
             FlipX = 0x20,
@@ -315,26 +245,104 @@ namespace StudioKurage.Emulator.Gameboy
             Priority = 0x80,
         }
 
-        SpriteAttributes ReadSpriteAttributes (int spriteCounter, int spriteWidth, int spriteHeight)
+        ObjectAttributes ReadObjectAttributes (int counter, int width, int height)
         {
-            var sa = new SpriteAttributes ();
+            var oa = new ObjectAttributes ();
 
-            ushort spriteDataIndex = (ushort)(Address.Oam + SpriteDataSize * spriteCounter);
+            ushort index = (ushort)(Address.Oam_L + ObjectDataSize * counter);
 
-            sa.y = (short)(mmu.rb (spriteDataIndex + Offset_Sprite_Y) - spriteHeight);
-            sa.x = (short)(mmu.rb (spriteDataIndex + Offset_Sprite_X) - spriteWidth);
+            oa.y = (short)(mmu.rb (index + 0x00) - height);
+            oa.x = (short)(mmu.rb (index + 0x01) - width);
 
-            sa.tileIndex = mmu.rb (spriteDataIndex + Offset_Sprite_TileIndex);
+            oa.characterCode = mmu.rb (index + 0x02);
 
-            // attribute data
-            byte attributeData = mmu.rb (spriteDataIndex + Offset_Sprite_AttributeData);
+            byte attributeData = mmu.rb (index + 0x03);
 
-            sa.paletteSelection = !HasFlag (attributeData, (byte)SpriteAttributeFlag.PaletteSelection);
-            sa.flipX            =  HasFlag (attributeData, (byte)SpriteAttributeFlag.FlipX);
-            sa.flipY            =  HasFlag (attributeData, (byte)SpriteAttributeFlag.FlipY);
-            sa.priority         =  HasFlag (attributeData, (byte)SpriteAttributeFlag.Priority);
+            oa.paletteSelection = HasFlag (attributeData, (byte)ObjectAttributeFlag.PaletteSelection);
+            oa.flipX            = HasFlag (attributeData, (byte)ObjectAttributeFlag.FlipX);
+            oa.flipY            = HasFlag (attributeData, (byte)ObjectAttributeFlag.FlipY);
+            oa.priority         = HasFlag (attributeData, (byte)ObjectAttributeFlag.Priority);
 
-            return sa;
+            return oa;
+        }
+
+        void RenderObjects ()
+        {
+            int width = 8;
+            int height = (largeTile ? 16 : 8);
+
+            for (int counter = MaxObjectCount - 1; counter >= 0; --counter) {
+                // read oam
+                var oa = ReadObjectAttributes (counter, width, height);
+
+                // out of screen
+                if (oa.x >= WindowWidth || oa.x <= -width || oa.y >= WindowHeight || oa.y <= -height) {
+                    continue;
+                }
+
+                byte tileY = (byte)(ly - oa.y);
+
+                // not on current line
+                if (oa.y > (short)ly || tileY >= width) {
+                    continue;
+                }
+
+                // update palette
+                byte palette = mmu.rb (oa.paletteSelection ? Address.ObjectTilemapB : Address.ObjectTilemapA);
+
+                for (int i = 0; i < 4; ++i) {
+                    objectPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
+                }
+
+                // find tile address
+                ushort tileAddress;
+
+                if (largeTile) {
+                    if (oa.flipY) {
+                        tileY = (byte)(15 - tileY);
+                    }
+
+                    // check which 8x8 tile has to be used
+                    if (tileY < 8) {
+                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode & 0xFE)); // Upper tile, ignore LSB
+                    } else {
+                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode | 0x01)); // Lower tile, set LSB
+                        tileY -= 8;
+                    }
+                } else {
+                    if (oa.flipY) {
+                        tileY = (byte)(7 - tileY);
+                    }
+
+                    tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * oa.characterCode);
+                }
+
+                // render the line...
+                for (int x = 0; x < width; ++x) {
+                    // skip if out of window
+                    if (oa.x + x < 0 || oa.x + x >= WindowWidth) {
+                        continue;
+                    }
+
+                    // flip?
+                    byte tileX = (byte)(oa.flipX ? (7 - x) : x);
+
+                    // read vram
+                    byte pixel = ReadTile (tileAddress, tileX, tileY);
+
+                    // skip if pixel is transparent
+                    if (pixel == 0) {
+                        continue;
+                    }
+
+                    // write if priority or background is transparen
+                    bool backgroundTransparent = texture.GetPixel (oa.x + x, ly) == backgroundPalette [0];
+
+                    if (oa.priority || backgroundTransparent) {
+                        texture.SetPixel (oa.x + x, ly, objectPalette [pixel]);
+                    }
+                }
+            }
         }
 
         #endregion
