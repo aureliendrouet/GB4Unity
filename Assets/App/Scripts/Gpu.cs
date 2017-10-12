@@ -13,7 +13,7 @@ namespace StudioKurage.Emulator.Gameboy
         Mmu mmu;
 
         bool enabled;
-        bool drawFlag;
+        public bool frameRendered { get; protected set; }
         bool lineRendered;
 
         public Gpu (Mmu mmu)
@@ -28,7 +28,7 @@ namespace StudioKurage.Emulator.Gameboy
             mc = 0;
             delay = 0;
             enabled = true;
-            drawFlag = false;
+            frameRendered = false;
             lineRendered = false;
         }
 
@@ -36,7 +36,7 @@ namespace StudioKurage.Emulator.Gameboy
         {
             LoadMemory ();
 
-            drawFlag = false;
+            frameRendered = false;
 
             if (lcdEnabled) {
                 if (!enabled && delay == 0) {
@@ -81,11 +81,11 @@ namespace StudioKurage.Emulator.Gameboy
         {
             lcdc = mmu.rb (Address.Lcdc);
             stat = mmu.rb (Address.Stat);
-            wy   = (short)mmu.rb (Address.Scy);
-            wx   = (short)mmu.rb (Address.Scx);
-            ly   = mmu.rb (Address.Ly);
-            lyc  = mmu.rb (Address.Lyc);
-            irr  = mmu.rb (Address.Irr);
+            wy = (short)mmu.rb (Address.Scy);
+            wx = (short)mmu.rb (Address.Scx);
+            ly = mmu.rb (Address.Ly);
+            lyc = mmu.rb (Address.Lyc);
+            irr = mmu.rb (Address.Irr);
         }
 
         void WriteMemory ()
@@ -130,7 +130,7 @@ namespace StudioKurage.Emulator.Gameboy
                 ly++;
 
                 if (ly == VblankLineBegin) {
-                    drawFlag = true;
+                    frameRendered = true;
 
                     SetLcdMode (LcdMode.Vblank);
                     if (vblankEnabled) {
@@ -181,7 +181,7 @@ namespace StudioKurage.Emulator.Gameboy
                 mc += imc;
                 if (mc >= CyclesPerFrame) {
                     mc -= CyclesPerFrame;
-                    drawFlag = true;
+                    frameRendered = true;
                 }
             }
         }
@@ -199,9 +199,14 @@ namespace StudioKurage.Emulator.Gameboy
             mc = 0;
             delay = 0;
             enabled = false;
-            drawFlag = false;
+            frameRendered = false;
             lineRendered = false;
             Clear ();
+        }
+
+        void Clear()
+        {
+            System.Array.Clear (frame, 0, frame.Length);
         }
     }
 }

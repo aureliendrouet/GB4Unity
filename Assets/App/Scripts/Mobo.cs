@@ -9,19 +9,25 @@ namespace StudioKurage.Emulator.Gameboy
         public Cpu cpu;
         public Mmu mmu;
         public Gpu gpu;
+        public Audio audio;
+        public Timer timer;
 
         public Mobo ()
         {
             mmu = new Mmu ();
             cpu = new Cpu (mmu);
             gpu = new Gpu (mmu);
+            audio = new Audio (mmu);
+            timer = new Timer (mmu);
         }
 
         public void Reset ()
         {
             cpu.Reset ();
-            gpu.Reset ();
             mmu.Reset ();
+            audio.Reset ();
+            gpu.Reset ();
+            timer.Reset ();
         }
 
         public void LoadRom (byte[] rom)
@@ -29,9 +35,13 @@ namespace StudioKurage.Emulator.Gameboy
             mmu.LoadRom (rom);
         }
 
-        public void Tick (float deltaTime)
+        public long Tick ()
         {
-            
+            cpu.ExecNextOpcode ();
+            audio.Tick (cpu.imc);
+            gpu.Tick (cpu.imc);
+            timer.Tick (cpu.imc);
+            return cpu.imc;
         }
     }
 }

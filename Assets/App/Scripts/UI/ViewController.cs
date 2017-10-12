@@ -20,6 +20,9 @@ namespace StudioKurage.Emulator.Gameboy
 
         void Start ()
         {
+            // limit to 60 fps
+            Application.targetFrameRate = 60;
+
             // create
             mobo = new Mobo ();
             disassembler = new Disassembler (mobo.cpu);

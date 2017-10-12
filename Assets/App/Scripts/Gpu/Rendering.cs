@@ -7,24 +7,6 @@ namespace StudioKurage.Emulator.Gameboy
 {
     public partial class Gpu
     {
-
-        #region Texture
-
-        Texture2D texture;
-        Color[] defaultTextureColors = Enumerable.Repeat (Color.clear, WindowWidth * WindowHeight).ToArray ();
-
-        public void Render ()
-        {
-            texture.Apply ();
-        }
-
-        public void Clear ()
-        {
-            texture.SetPixels (defaultTextureColors);
-        }
-
-        #endregion
-
         #region Scanline
         // Region      Usage
         // 8000-87FF   Tile set #A: tiles   0 to  127
@@ -50,13 +32,14 @@ namespace StudioKurage.Emulator.Gameboy
         //  [7-6]     [5-4]     [3-2]     [1-0]
         // color 3 - color 2 - color 1 - color 0
         //
-        Color[] userPalette = new Color[4];
+        public byte[] frame = new byte[WindowHeight * WindowWidth];
+        byte[] userPalette = new byte[4] { 0, 1,  2, 3 };
 
         const int ScreenWidth = 256;
         const int ScreenHeight = 256;
 
-        const byte WindowWidth = 160;
-        const byte WindowHeight = 144;
+        public const byte WindowWidth = 160;
+        public const byte WindowHeight = 144;
 
         const int ColorCount = 4;
         const int TilesPerRow = 32;
@@ -64,7 +47,7 @@ namespace StudioKurage.Emulator.Gameboy
         const int BitsPerAddress = 16;
 
 
-        Color[] backgroundPalette = new Color[4];
+        byte[] backgroundPalette = new byte[4];
 
         void RenderScanline ()
         {
@@ -121,6 +104,8 @@ namespace StudioKurage.Emulator.Gameboy
             tileRow = (ushort)(((wy + ly) % ScreenHeight) / BitsPerByte);
             tileY = (byte)(((wy + ly) % ScreenHeight) % BitsPerByte);
 
+            int offset = ly * WindowWidth;
+
             for (int lx = 0; lx < WindowWidth; ++lx) {
                 tileColumn = (ushort)(((wx + lx) % ScreenWidth) / BitsPerByte);
                 tileX = (byte)(((wx + lx) % ScreenWidth) % BitsPerByte);
@@ -141,7 +126,7 @@ namespace StudioKurage.Emulator.Gameboy
                 colorIndex = ReadTile (tileAddress, tileX, tileY);
 
                 // update texture
-                texture.SetPixel (lx, ly, backgroundPalette [colorIndex]);
+                frame [offset + lx] = backgroundPalette [colorIndex];
             }
         }
 
@@ -184,6 +169,8 @@ namespace StudioKurage.Emulator.Gameboy
             tileRow = (ushort)((ly - wy) / BitsPerByte);
             tileY = (byte)((ly - wy) % BitsPerByte);
 
+            int offset = ly * WindowWidth;
+
             for (int lx = (wx < 0) ? 0 : wx; lx < WindowWidth; ++lx) {
                 tileColumn = (ushort)((lx - wx) / BitsPerByte);
                 tileX = (byte)((lx - wx) % BitsPerByte);
@@ -204,7 +191,7 @@ namespace StudioKurage.Emulator.Gameboy
                 colorIndex = ReadTile (tileAddress, tileX, tileY);
 
                 // update texture
-                texture.SetPixel (lx, ly, backgroundPalette [colorIndex]);
+                frame [offset + lx] = backgroundPalette [colorIndex];
             }
         }
 
@@ -221,28 +208,28 @@ namespace StudioKurage.Emulator.Gameboy
         // - x-axis coordinate (1 byte)
         // - character code (1 byte)
         // - attribute data (1 byte)
-        Color[] objectPalette = new Color[4];
+        byte[] objectPalette = new byte[4];
 
         const int ObjectDataSize = 0x04;
         const int MaxObjectCount = 40;
 
         struct ObjectAttributes
         {
-            public short y;               // LCD x-coordinate
-            public short x;               // LCD y-coordinate
-            public byte characterCode;    // CHR code
-            public bool paletteSelection; // palette selection
-            public bool flipX;            // horizontal flip flag
-            public bool flipY;            // vertical flip flag
-            public bool priority;         // display priority (0: priority to OBJ, 1: priority to BG)
+            public short y;
+            public short x;
+            public byte characterCode;
+            public bool paletteSelection; 
+            public bool flipX;
+            public bool flipY;
+            public bool priority;
         }
 
         enum ObjectAttributeFlag : byte
         {
-            PaletteSelection = 0x10,
-            FlipX = 0x20,
-            FlipY = 0x40,
-            Priority = 0x80,
+            PaletteSelection = 0x10, // palette selection
+            FlipX            = 0x20, // horizontal flip flag
+            FlipY            = 0x40, // vertical flip flag
+            Priority         = 0x80, // display priority (0: priority to OBJ, 1: priority to BG)
         }
 
         ObjectAttributes ReadObjectAttributes (int counter, int width, int height)
@@ -304,9 +291,9 @@ namespace StudioKurage.Emulator.Gameboy
 
                     // check which 8x8 tile has to be used
                     if (tileY < 8) {
-                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode & 0xFE)); // Upper tile, ignore LSB
+                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode & 0xFE)); // upper tile, ignore lsb
                     } else {
-                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode | 0x01)); // Lower tile, set LSB
+                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode | 0x01)); // lower tile, set lsb
                         tileY -= 8;
                     }
                 } else {
@@ -316,6 +303,8 @@ namespace StudioKurage.Emulator.Gameboy
 
                     tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * oa.characterCode);
                 }
+
+                int offset = ly * WindowWidth;
 
                 // render the line...
                 for (int x = 0; x < width; ++x) {
@@ -336,10 +325,10 @@ namespace StudioKurage.Emulator.Gameboy
                     }
 
                     // write if priority or background is transparen
-                    bool backgroundTransparent = texture.GetPixel (oa.x + x, ly) == backgroundPalette [0];
+                    bool backgroundTransparent = frame[offset + oa.x + x] == backgroundPalette [0];
 
                     if (oa.priority || backgroundTransparent) {
-                        texture.SetPixel (oa.x + x, ly, objectPalette [pixel]);
+                        frame[offset + oa.x + x] = objectPalette [pixel];
                     }
                 }
             }
