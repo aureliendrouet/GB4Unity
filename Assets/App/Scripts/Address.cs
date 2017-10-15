@@ -14,10 +14,10 @@ namespace StudioKurage.Emulator.Gameboy
         public const ushort GameTitle_L = 0x0134;
         public const ushort GameTitle_M = 0x013E;
 
-        public const ushort GameDestination_L = 0x013F;
-        public const ushort GameDestination_M = 0x0142;
+        public const ushort ManufacturerCode_L = 0x013F;
+        public const ushort ManufacturerCode_M = 0x0142;
 
-        public const ushort ColorCompataibility = 0x0143;
+        public const ushort GameboyColorCompatibility = 0x0143;
 
         public const ushort NewLicense_L = 0x0144;
         public const ushort NewLicense_M = 0x0145;

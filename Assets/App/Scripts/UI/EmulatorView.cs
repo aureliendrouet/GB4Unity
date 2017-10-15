@@ -36,20 +36,21 @@ namespace StudioKurage.Emulator.Gameboy
             float cyclesPerSecond = 4194304; // 4.194304 MHz
             long cycles;
             long maxCycles;
-            float speed = 1f;
+            float speed = 0.1f;
 
             while (true) {
-                yield return null;
                 cycles = 0;
-                maxCycles = Mathf.RoundToInt (cyclesPerSecond * Time.deltaTime * speed);
+                maxCycles = (int)(cyclesPerSecond * Time.deltaTime * speed);
 
                 while (cycles < maxCycles) {
-                    cycles += mobo.Tick ();
+                    cycles += mobo.Tick () * 4;
+
+                    if (mobo.gpu.frameRendered) {
+                        UpdateFrame ();
+                    }
                 }
 
-                if (mobo.gpu.frameRendered) {
-                    UpdateFrame ();
-                }
+                yield return null;
             }
         }
 

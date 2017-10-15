@@ -399,6 +399,16 @@ namespace StudioKurage.Emulator.Gameboy
             resolvedAddress = 0;
         }
 
+        public byte[] r (ushort begin, ushort end)
+        {
+            int length = (end - begin) + 1;
+            byte[] data = new byte[length ];
+            for (ushort i = 0; i < length; i++) {
+                data [i] = rb (begin + i);
+            }
+            return data;
+        }
+
         #region Direct Memory Access
 
         public void Dma (ushort dest, ushort src, ushort n)
@@ -427,7 +437,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         #region Interrupt
 
-        public void RequestInterrupt(byte flag)
+        public void RequestInterrupt (byte flag)
         {
             wb (Address.InterruptRequest, rb (Address.InterruptRequest) | flag);
         }

@@ -54,7 +54,7 @@ namespace StudioKurage.Emulator.Gameboy
                 timer.Tick (mc);
             }
 
-            return mc * 4;
+            return mc;
         }
     }
 }

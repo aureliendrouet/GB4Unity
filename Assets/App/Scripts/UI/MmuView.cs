@@ -14,7 +14,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         InputField[] inputs;
         Button[] buttons;
-        string[] links = new string[] { "00", "40", "80", "A0", "C0", "FE", "FF", "FF", "FF" };
+        string[] links = new string[] { "00", "40", "80", "A0", "C0", "FE", "FF" };
 
         Mmu mmu;
 
