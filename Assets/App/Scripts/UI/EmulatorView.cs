@@ -36,7 +36,7 @@ namespace StudioKurage.Emulator.Gameboy
             float cyclesPerSecond = 4194304; // 4.194304 MHz
             long cycles;
             long maxCycles;
-            float speed = 0.1f; // 10 times slower
+            float speed = 1f;
 
             while (true) {
                 yield return null;

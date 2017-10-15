@@ -8,26 +8,46 @@ namespace StudioKurage.Emulator.Gameboy
     {
         Mmu mmu;
 
+        // divider timer is permanently set to increment at 16384 Hz
+        // 1/16th of the timer base speed
+        // go back to zero after the overflow
         byte divider;
 
+        // counter" timer is programmable
+        // it can be set to one of four speeds (the base divided by 1, 4, 16 or 64
+        // go back to modulator value after the overflow
+        // send an interrupt when it overflows
         byte counter;
 
         // timer modulator
         byte modulator;
 
         // timer controller
-        // --00   4096 Hz   4096 / 256 =   16 overflows per seconds
-        // --01 262144 Hz 262144 / 256 = 1024 overflows per seconds262144 Hz
-        // --10  65536 Hz  65536 / 256 =  256 overflows per seconds65536 Hz
-        // --11  16384 Hz  16384 / 256 =   64 overflows per seconds16384 Hz 
+        // --XX speed
         // -X-- enabled or disabled
+        //
+        // Speed
+        // 00:   4096 Hz
+        // 01: 262144 Hz (base)
+        // 10:  65536 Hz
+        // 11:  16384 Hz
+        //
+        // 4194304 Hz /   4096 Hz / 16 (base) = 64
+        // 4194304 Hz / 262144 Hz / 16 (base) = 1
+        // 4194304 Hz /  65536 Hz / 16 (base) = 4
+        // 4194304 Hz /  16384 Hz / 16 (base) = 16
         byte controller;
 
-        // timer counter
-        // gameboy frequency / timer frequency 
+        // t-clock (clock cycles)
         long tc;
 
-        long bc, dc;
+        // base clock
+        long bc;
+
+        // div clock
+        long dc;
+
+        const int TicksPerSeconds = 16;
 
         int[] timerFrequencies = new int[] {
             64, 
@@ -54,38 +74,39 @@ namespace StudioKurage.Emulator.Gameboy
             dc = 0;
         }
 
-        public void Tick (long cycles)
+        public void Tick (long mc)
         {
             LoadMemory ();
 
-            tc += cycles;
+            // m-clock increments at 1/4 the m-clock rate
+            tc += mc * 4;
 
             // timer ticks occur at 1/16 the CPU cycles
-            while (tc >= 16) {
-                tc -= 16;
+            while (tc >= TicksPerSeconds) {
+                tc -= TicksPerSeconds;
                 bc++;
                 dc++;
 
-                // do divider clock
-                if (dc == 16) {
+                // divider clock
+                if (dc == TicksPerSeconds) {
                     divider++;
                     dc = 0;
                 }
 
-                // only if timer is enabled
+                // check if timer is enabled
                 if ((controller & TimerControllerEnabledFlag) == TimerControllerEnabledFlag) {
                     // get frequency 
-                    int freq = timerFrequencies [controller & 0x03];
+                    int threshold = timerFrequencies [controller & 0x03];
 
-                    // increment counter
-                    while (bc >= freq) {
-                        bc -= freq;
+                    while (bc >= threshold) {
+                        bc -= threshold;
 
-                        // overflow!
                         if (counter == 0xFF) {
+                            // overflow!
                             counter = modulator;
                             mmu.RequestInterrupt (InterruptFlag.TimeOverflow);
                         } else {
+                            // increment counter
                             counter++;
                         }
                     }
@@ -107,8 +128,6 @@ namespace StudioKurage.Emulator.Gameboy
         {
             mmu.wb (Address.TimerDivider, divider);
             mmu.wb (Address.TimerCounter, counter);
-            mmu.wb (Address.TimerModulator, modulator);
-            mmu.wb (Address.TimerController, controller);
         }
     }
 }
