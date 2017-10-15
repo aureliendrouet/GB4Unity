@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace StudioKurage.Emulator.Gameboy
 {
-    public class MmuView : MonoBehaviour
+    public class MmuView : View
     {
         [SerializeField] Transform inputContainer;
         [SerializeField] Transform linkContainer;
@@ -18,9 +18,10 @@ namespace StudioKurage.Emulator.Gameboy
 
         Mmu mmu;
 
-        public void Setup (Mmu _)
+        public override void Setup (Mobo _)
         {
-            mmu = _;
+            base.Setup (_);
+            mmu = _.mmu;
         }
 
         void Awake ()
@@ -42,6 +43,10 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Refresh ()
         {
+            if (!gameObject.activeInHierarchy) {
+                return;
+            }
+
             byte upper = StringUtil.HexToByte (page.text);
             page.text = string.Format ("{0:X2}", upper);
             

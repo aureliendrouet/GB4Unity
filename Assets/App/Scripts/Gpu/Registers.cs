@@ -46,60 +46,60 @@ namespace StudioKurage.Emulator.Gameboy
         // 1: LCDC On
         byte lcdc;
 
-        enum LcdcFlag : byte
+        static class LcdcFlag
         {
-            BackgroundEnabled          = 0x01,
-            ForegroundEnabled          = 0x02,
-            TileSizeSelection          = 0x04,
-            BackgroundTilemapSelection = 0x08,
-            BackgroundTilesetSelection = 0x10,
-            WindowEnabled              = 0x20,
-            WindowTilemapSelection     = 0x40,
-            LcdEnabled                 = 0x80,
+            public static byte BackgroundEnabled          = 0x01;
+            public static byte ObjectEnabled              = 0x02;
+            public static byte TileSizeSelection          = 0x04;
+            public static byte BackgroundTilemapSelection = 0x08;
+            public static byte BackgroundTilesetSelection = 0x10;
+            public static byte WindowEnabled              = 0x20;
+            public static byte WindowTilemapSelection     = 0x40;
+            public static byte LcdEnabled                 = 0x80;
         }
 
         bool lcdEnabled {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.LcdEnabled);
+                return (lcdc & LcdcFlag.LcdEnabled) == LcdcFlag.LcdEnabled;
             }
         }
         bool backgroundEnabled {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundEnabled);
+                return (lcdc & LcdcFlag.BackgroundEnabled) == LcdcFlag.BackgroundEnabled;
             }
         }
         bool windowEnabled {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.WindowEnabled);
+                return (lcdc & LcdcFlag.WindowEnabled) == LcdcFlag.WindowEnabled;
             }
         }
-        bool foregroundEnabled {
+        bool objectEnabled {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.ForegroundEnabled);
+                return (lcdc & LcdcFlag.ObjectEnabled) == LcdcFlag.ObjectEnabled;
             }
         }
 
         bool backgroundTilesetSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTilesetSelection);
+                return (lcdc & LcdcFlag.BackgroundTilesetSelection) == LcdcFlag.BackgroundTilesetSelection;
             }
         }
 
         bool backgroundTilemapSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.BackgroundTilemapSelection);
+                return (lcdc & LcdcFlag.BackgroundTilemapSelection) == LcdcFlag.BackgroundTilemapSelection;
             }
         }
 
         bool windowTilemapSelection {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.WindowTilemapSelection);
+                return (lcdc & LcdcFlag.WindowTilemapSelection) == LcdcFlag.WindowTilemapSelection;
             }
         }
 
         bool largeTile {
             get {
-                return HasFlag (lcdc, (byte)LcdcFlag.TileSizeSelection);
+                return (lcdc & LcdcFlag.TileSizeSelection) == LcdcFlag.TileSizeSelection;
             }
         }
 
@@ -132,38 +132,56 @@ namespace StudioKurage.Emulator.Gameboy
             Vram   = 3, // transferring data to lcd
         }
 
-        enum StatFlag : byte
+        public static class StatFlag
         {
-            Match  = 0x04,
-            Hblank = 0x08,
-            Vblank = 0x10,
-            Oam    = 0x20,
-            LyLyc  = 0x40,
+            public static byte Match  = 0x04;
+            public static byte Hblank = 0x08;
+            public static byte Vblank = 0x10;
+            public static byte Oam    = 0x20;
+            public static byte LyLyc  = 0x40;
+        }
+
+        bool matched {
+            set {
+                if (value) {
+                    stat = (byte)(stat | StatFlag.Match);
+                } else {
+                    stat = (byte)(stat & ~StatFlag.Match);
+                }
+            }
         }
 
         bool hblankEnabled {
             get {
-                return HasFlag (stat, (byte)StatFlag.Hblank);
+                return (stat & StatFlag.Hblank) == StatFlag.Hblank;
             }
         }
 
         bool vblankEnabled {
             get {
-                return HasFlag (stat, (byte)StatFlag.Vblank);
+                return (stat & StatFlag.Vblank) == StatFlag.Vblank;
             }
         }
 
         bool oamEnabled {
             get {
-                return HasFlag (stat, (byte)StatFlag.Oam);
+                return (stat & StatFlag.Oam) == StatFlag.Oam;
             }
         }
 
-        // window y
-        short wy;
+        bool lyLycEnabled {
+            get {
+                return (stat & StatFlag.LyLyc) == StatFlag.LyLyc;
+            }
+        }
 
-        // window x
-        short wx;
+        // scroll y
+        // the y position of the background where to start drawing the viewing area from 
+        short scy;
+
+        // scroll x
+        // the x position of the background to start drawing the viewing area from
+        short scx;
 
         // line
         byte ly;
@@ -171,14 +189,13 @@ namespace StudioKurage.Emulator.Gameboy
         // line control
         byte lyc;
 
-        // interupt request register
-        byte irr;
+        // window y
+        // the y Position of the viewing area to start drawing the window from
+        short wy;
 
-        enum IrrFlag : byte
-        {
-            Vblank  = 0x01,
-            LcdStat = 0x02,
-        }
+        // window x
+        // the x Position of the viewing area to start drawing the window from
+        short wx;
 
         #region Register Utility
 
@@ -198,28 +215,13 @@ namespace StudioKurage.Emulator.Gameboy
         void CompareLyLyc ()
         {
             if (ly == lyc) {
-                SetFlag (ref stat, (byte)StatFlag.Match);
-                if (HasFlag (stat, (byte)StatFlag.LyLyc)) { 
-                    SetFlag (ref irr, (byte)IrrFlag.LcdStat);
+                matched = true;
+                if (lyLycEnabled) { 
+                    mmu.RequestInterrupt(InterruptFlag.LcdStat);
                 }
             } else {
-                ResetFlag (ref stat, (byte)StatFlag.Match);
+                matched = false;
             }
-        }
-
-        void SetFlag (ref byte r, byte flag)
-        {
-            r |= flag;
-        }
-
-        void ResetFlag (ref byte r, byte flag)
-        {
-            r = (byte)(r & ~flag);
-        }
-
-        bool HasFlag (byte value, byte flag)
-        {
-            return (value & flag) == flag;
         }
 
         #endregion

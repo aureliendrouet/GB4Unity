@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace StudioKurage.Emulator.Gameboy
 {
-    public class Audio
+    public class Apu
     {
         Mmu mmu;
 
-        public Audio (Mmu mmu)
+        public Apu (Mmu mmu)
         {
             this.mmu = mmu;
         }

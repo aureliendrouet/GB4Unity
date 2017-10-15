@@ -24,7 +24,7 @@ namespace StudioKurage.Emulator.Gameboy
             /* 9 */ SUBr_b,   SUBr_c,   SUBr_d,   SUBr_e,   SUBr_h,   SUBr_l,   SUBHL,    SUBr_a,   SBCr_b,   SBCr_c,   SBCr_d,   SBCr_e,   SBCr_h,   SBCr_l,   SBCHL,    SBCr_a,
             /* A */ ANDr_b,   ANDr_c,   ANDr_d,   ANDr_e,   ANDr_h,   ANDr_l,   ANDHL,    ANDr_a,   XORr_b,   XORr_c,   XORr_d,   XORr_e,   XORr_h,   XORr_l,   XORHL,    XORr_a,
             /* B */ ORr_b,    ORr_c,    ORr_d,    ORr_e,    ORr_h,    ORr_l,    ORHL,     ORr_a,    CPr_b,    CPr_c,    CPr_d,    CPr_e,    CPr_h,    CPr_l,    CPHL,     CPr_a,
-            /* C */ RETNZ,    POPBC,    JPNZnn,   JPnn,     CALLNZnn, PUSHBC,   ADDn,     RST00,    RETZ,     RETNI,    JPZnn,    MAPcb,    CALLZnn,  CALLnn,   ADCn,     RST08,
+            /* C */ RETNZ,    POPBC,    JPNZnn,   JPnn,     CALLNZnn, PUSHBC,   ADDn,     RST00,    RETZ,     RETNI,    JPZnn,    STOP,     CALLZnn,  CALLnn,   ADCn,     RST08,
             /* D */ RETNC,    POPDE,    JPNCnn,   UNKNOWN,  CALLNCnn, PUSHDE,   SUBn,     RST10,    RETC,     RETI,     JPCnn,    UNKNOWN,  CALLCnn,  UNKNOWN,  SBCn,     RST18,
             /* E */ LDIOnA,   POPHL,    LDIOCA,   UNKNOWN,  UNKNOWN,  PUSHHL,   ANDn,     RST20,    ADDSPn,   JPHL,     LDmmA,    UNKNOWN,  UNKNOWN,  UNKNOWN,  ORn,      RST28,
             /* F */ LDAIOn,   POPAF,    LDAIOC,   DI,       UNKNOWN,  PUSHAF,   XORn,     RST30,    LDHLSPn,  LDSPHL,   LDAmm,    EI,       UNKNOWN,  UNKNOWN,  CPn,      RST38,

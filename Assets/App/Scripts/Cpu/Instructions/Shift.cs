@@ -60,40 +60,40 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction SRLr_a = (_) => { SRL(_, ref _.a); };
 
         // rotate left:  lsb = msb, cf = msb
-        static Instruction RLCA = (_) => { var msb = _.a & 0x80; _.a = (byte) ((_.a << 1) | (msb >> 7)); SF(_, msb); _.m = 1; };
+        static Instruction RLCA = (_) => { var msb = _.a & 0x80; _.a = (byte) ((_.a << 1) | (msb >> 7)); SF(_, msb); };
         // rotate right: msb = lsb, cf = lsb
-        static Instruction RRCA = (_) => { var lsb = _.a & 0x01; _.a = (byte) ((_.a >> 1) | (lsb << 7)); SF(_, lsb); _.m = 1; };
+        static Instruction RRCA = (_) => { var lsb = _.a & 0x01; _.a = (byte) ((_.a >> 1) | (lsb << 7)); SF(_, lsb); };
 
         // rotate left:  lsb = cf, cf = msb
-        static Instruction RLA  = (_) => { var msb = _.a & 0x80; _.a = (byte) ((_.a << 1) | (_.cf ? 0x01 : 0x00)); SF(_, msb); _.m = 1; };
+        static Instruction RLA  = (_) => { var msb = _.a & 0x80; _.a = (byte) ((_.a << 1) | (_.cf ? 0x01 : 0x00)); SF(_, msb); };
         // rotate right: msb = cf, cf = lsb
-        static Instruction RRA  = (_) => { var lsb = _.a & 0x01; _.a = (byte) ((_.a >> 1) | (_.cf ? 0x80 : 0x00)); SF(_, lsb); _.m = 1; };
+        static Instruction RRA  = (_) => { var lsb = _.a & 0x01; _.a = (byte) ((_.a >> 1) | (_.cf ? 0x80 : 0x00)); SF(_, lsb); };
 
-        static Instruction RLCHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte)((hl << 1) | (co >> 0x80));              _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction RRCHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (co << 0x80));              _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction RLHL  = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte)((hl << 1) | (_.cf ? 0x01 : 0x00));      _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction RRHL  = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (_.cf ? 0x80 : 0x00))     ; _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction SLAHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte) (hl << 1);                              _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction SRAHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (hl & 0x80));               _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
-        static Instruction SRLHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte) (hl >> 1);                              _.mmu.wb(_.hl, r); SF(_, co, r); _.m = 4; };
+        static Instruction RLCHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte)((hl << 1) | (co >> 0x80));              _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction RRCHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (co << 0x80));              _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction RLHL  = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte)((hl << 1) | (_.cf ? 0x01 : 0x00));      _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction RRHL  = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (_.cf ? 0x80 : 0x00))     ; _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction SLAHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x80; byte r = (byte) (hl << 1);                              _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction SRAHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte)((hl >> 1) | (hl & 0x80));               _.mmu.wb(_.hl, r); SF(_, co, r); };
+        static Instruction SRLHL = (_) => { byte hl = _.mmu.rb(_.hl); var co = hl & 0x01; byte r = (byte) (hl >> 1);                              _.mmu.wb(_.hl, r); SF(_, co, r); };
 
         // rotate left:  lsb = msb, cf = msb
-        static void RLC (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) ((r << 1) | (msb >> 7)); SF(_, msb, r); _.m = 2; }
+        static void RLC (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) ((r << 1) | (msb >> 7)); SF(_, msb, r); }
         // rotate right: msb = lsb, cf = lsb
-        static void RRC (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r >> 1) | (lsb << 7)); SF(_, lsb, r); _.m = 2; }
+        static void RRC (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r >> 1) | (lsb << 7)); SF(_, lsb, r); }
 
         // rotate left:  lsb = cf, cf = msb
-        static void RL  (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) ((r << 1) | (_.cf ? 0x01 : 0x00)); SF(_, msb, r); _.m = 2; }
+        static void RL  (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) ((r << 1) | (_.cf ? 0x01 : 0x00)); SF(_, msb, r); }
         // rotate right: msb = cf, cf = lsb
-        static void RR  (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r >> 1) | (_.cf ? 0x80 : 0x00)); SF(_, lsb, r); _.m = 2; }
+        static void RR  (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r >> 1) | (_.cf ? 0x80 : 0x00)); SF(_, lsb, r); }
 
         // shift left:  lsb = 0, cf = msb
-        static void SLA (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) (r << 1);                SF(_, msb, r); _.m = 2; }
+        static void SLA (Cpu _, ref byte r) { var msb = r & 0x80; r = (byte) (r << 1);                SF(_, msb, r); }
         // shift right: msb = msb, cf = lsb
-        static void SRA (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r & 0x80) | (r >> 1)); SF(_, lsb, r); _.m = 2; }
+        static void SRA (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) ((r & 0x80) | (r >> 1)); SF(_, lsb, r); }
 
         // shift right: msb = 0, cf = lsb
-        static void SRL (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) (r >> 1);                SF(_, lsb, r); _.m = 2; }
+        static void SRL (Cpu _, ref byte r) { var lsb = r & 0x01; r = (byte) (r >> 1);                SF(_, lsb, r); }
 
         static void SF (Cpu _, int v) { _.f = (byte)(_.f & 0x0f); _.cf = v != 0; }
         static void SF (Cpu _, int v, int r) { SF (_, v); _.zf = r == 0; }

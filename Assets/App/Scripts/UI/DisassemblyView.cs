@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace StudioKurage.Emulator.Gameboy
 {
-    public class DisassemblyView : MonoBehaviour
+    public class DisassemblyView : View
     {
         [SerializeField] GameObject linePrefab;
         [SerializeField] ScrollRect scroll;
@@ -14,13 +14,18 @@ namespace StudioKurage.Emulator.Gameboy
 
         Disassembler disassembler;
 
-        public void Setup (Disassembler _)
+        public override void Setup (Mobo _)
         {
-            disassembler = _;
+            base.Setup (_);
+            disassembler = new Disassembler (_.cpu);
         }
 
         public void Disassemble ()
         {
+            if (!gameObject.activeInHierarchy) {
+                return;
+            }
+
             int overflow = AdjustLines ();
 
             if (overflow == 0) {

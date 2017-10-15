@@ -12,6 +12,6 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction RST30 = (_) => { RST(_, 0x30); };
         static Instruction RST38 = (_) => { RST(_, 0x38); };
 
-        static void RST (Cpu _, byte v) { _.pushw(_.pc); _.pc = v; _.m = 3; }
+        static void RST (Cpu _, byte v) { _.pushw(_.pc); _.pc = v; }
     }
 }

@@ -60,7 +60,7 @@ namespace StudioKurage.Emulator.Gameboy
                     RenderWindow ();
                 }
 
-                if (foregroundEnabled) {
+                if (objectEnabled) {
                     RenderObjects ();
                 }
             }
@@ -68,7 +68,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         void UpdateBackgroundPalette ()
         {
-            byte palette = mmu.rb (Address.BackgroundPalette);
+            byte palette = mmu.rb (Address.Bgp);
 
             for (int i = 0; i < ColorCount; ++i) {
                 backgroundPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
@@ -82,17 +82,17 @@ namespace StudioKurage.Emulator.Gameboy
             ushort backgroundTilemapAddress;
 
             if (backgroundTilemapSelection) {
-                backgroundTilemapAddress = Address.BackgroundTilemapA;
-            } else {
                 backgroundTilemapAddress = Address.BackgroundTilemapB;
+            } else {
+                backgroundTilemapAddress = Address.BackgroundTilemapA;
             }
 
             ushort backgroundTilesetAddress;
 
             if (backgroundTilesetSelection) {
-                backgroundTilesetAddress = Address.BackgroundTilesetA;
+                backgroundTilesetAddress = Address.TilesetA;
             } else {
-                backgroundTilesetAddress = Address.BackgroundTilesetB;
+                backgroundTilesetAddress = Address.TilesetB;
             }
 
             byte tileX, tileY;
@@ -101,19 +101,19 @@ namespace StudioKurage.Emulator.Gameboy
             int tileIndex;
             byte colorIndex;
 
-            tileRow = (ushort)(((wy + ly) % ScreenHeight) / BitsPerByte);
-            tileY = (byte)(((wy + ly) % ScreenHeight) % BitsPerByte);
+            tileRow = (ushort)(((scy + ly) % ScreenHeight) / BitsPerByte);
+            tileY = (byte)(((scy + ly) % ScreenHeight) % BitsPerByte);
 
             int offset = ly * WindowWidth;
 
             for (int lx = 0; lx < WindowWidth; ++lx) {
-                tileColumn = (ushort)(((wx + lx) % ScreenWidth) / BitsPerByte);
-                tileX = (byte)(((wx + lx) % ScreenWidth) % BitsPerByte);
+                tileColumn = (ushort)(((scx + lx) % ScreenWidth) / BitsPerByte);
+                tileX = (byte)(((scx + lx) % ScreenWidth) % BitsPerByte);
 
                 // find tile index
                 tileIndexAddress = (ushort)(backgroundTilemapAddress + tileRow * TilesPerRow + tileColumn);
 
-                if (backgroundTilesetAddress == Address.BackgroundTilesetA) {
+                if (backgroundTilesetAddress == Address.TilesetA) {
                     tileIndex = mmu.rb (tileIndexAddress);
                 } else {
                     tileIndex = (sbyte)(mmu.rb (tileIndexAddress));
@@ -133,12 +133,12 @@ namespace StudioKurage.Emulator.Gameboy
         void RenderWindow ()
         {
             // check if the window is displayed
-            if (wy < 0 || wy >= WindowHeight || wx < -7 || wx >= WindowWidth) {
+            if (scy < 0 || scy >= WindowHeight || scx < -7 || scx >= WindowWidth) {
                 return;
             }
 
             // check if the window is on the current ly
-            if (wy > (short)(ly)) {
+            if (scy > (short)(ly)) {
                 return;
             }
 
@@ -147,17 +147,17 @@ namespace StudioKurage.Emulator.Gameboy
             ushort windowTilemapAddress;
 
             if (windowTilemapSelection) {
-                windowTilemapAddress = Address.WindowTilemapA;
-            } else {
                 windowTilemapAddress = Address.WindowTilemapB;
+            } else {
+                windowTilemapAddress = Address.WindowTilemapA;
             }
 
             ushort windowTilesetAddress;
 
             if (backgroundTilesetSelection) {
-                windowTilesetAddress = Address.BackgroundTilesetA;
+                windowTilesetAddress = Address.TilesetA;
             } else {
-                windowTilesetAddress = Address.BackgroundTilesetB;
+                windowTilesetAddress = Address.TilesetB;
             }
 
             byte tileX, tileY;
@@ -166,19 +166,19 @@ namespace StudioKurage.Emulator.Gameboy
             int tileIndex;
             byte colorIndex;
 
-            tileRow = (ushort)((ly - wy) / BitsPerByte);
-            tileY = (byte)((ly - wy) % BitsPerByte);
+            tileRow = (ushort)((ly - scy) / BitsPerByte);
+            tileY = (byte)((ly - scy) % BitsPerByte);
 
             int offset = ly * WindowWidth;
 
-            for (int lx = (wx < 0) ? 0 : wx; lx < WindowWidth; ++lx) {
-                tileColumn = (ushort)((lx - wx) / BitsPerByte);
-                tileX = (byte)((lx - wx) % BitsPerByte);
+            for (int lx = (scx < 0) ? 0 : scx; lx < WindowWidth; ++lx) {
+                tileColumn = (ushort)((lx - scx) / BitsPerByte);
+                tileX = (byte)((lx - scx) % BitsPerByte);
 
                 // find tile index
                 tileIndexAddress = (ushort)(windowTilemapAddress + tileRow * TilesPerRow + tileColumn);
 
-                if (windowTilesetAddress == Address.BackgroundTilesetA) {
+                if (windowTilesetAddress == Address.TilesetA) {
                     tileIndex = mmu.rb (tileIndexAddress);
                 } else {
                     tileIndex = (sbyte)(mmu.rb (tileIndexAddress));
@@ -224,12 +224,12 @@ namespace StudioKurage.Emulator.Gameboy
             public bool priority;
         }
 
-        enum ObjectAttributeFlag : byte
+        static class ObjectAttributeFlag
         {
-            PaletteSelection = 0x10, // palette selection
-            FlipX            = 0x20, // horizontal flip flag
-            FlipY            = 0x40, // vertical flip flag
-            Priority         = 0x80, // display priority (0: priority to OBJ, 1: priority to BG)
+            public static byte PaletteSelection = 0x10; // palette selection
+            public static byte FlipX            = 0x20; // horizontal flip flag
+            public static byte FlipY            = 0x40; // vertical flip flag
+            public static byte Priority         = 0x80; // display priority (0: priority to OBJ, 1: priority to BG)
         }
 
         ObjectAttributes ReadObjectAttributes (int counter, int width, int height)
@@ -245,10 +245,10 @@ namespace StudioKurage.Emulator.Gameboy
 
             byte attributeData = mmu.rb (index + 0x03);
 
-            oa.paletteSelection = HasFlag (attributeData, (byte)ObjectAttributeFlag.PaletteSelection);
-            oa.flipX            = HasFlag (attributeData, (byte)ObjectAttributeFlag.FlipX);
-            oa.flipY            = HasFlag (attributeData, (byte)ObjectAttributeFlag.FlipY);
-            oa.priority         = HasFlag (attributeData, (byte)ObjectAttributeFlag.Priority);
+            oa.paletteSelection = (attributeData & ObjectAttributeFlag.PaletteSelection) == ObjectAttributeFlag.PaletteSelection;
+            oa.flipX            = (attributeData & ObjectAttributeFlag.FlipX)            == ObjectAttributeFlag.FlipX;
+            oa.flipY            = (attributeData & ObjectAttributeFlag.FlipY)            == ObjectAttributeFlag.FlipY;
+            oa.priority         = (attributeData & ObjectAttributeFlag.Priority)         == ObjectAttributeFlag.Priority;
 
             return oa;
         }
@@ -275,11 +275,11 @@ namespace StudioKurage.Emulator.Gameboy
                 }
 
                 // update palette
-                byte palette = mmu.rb (oa.paletteSelection ? Address.ObjectTilemapB : Address.ObjectTilemapA);
-
-                for (int i = 0; i < 4; ++i) {
-                    objectPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
-                }
+//                byte palette = mmu.rb (oa.paletteSelection ? Address.ObjectTilemapA : Address.ObjectTilemapB);
+//
+//                for (int i = 0; i < 4; ++i) {
+//                    objectPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
+//                }
 
                 // find tile address
                 ushort tileAddress;
@@ -291,9 +291,9 @@ namespace StudioKurage.Emulator.Gameboy
 
                     // check which 8x8 tile has to be used
                     if (tileY < 8) {
-                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode & 0xFE)); // upper tile, ignore lsb
+                        tileAddress = (ushort)(Address.TilesetA + BitsPerAddress * (oa.characterCode & 0xFE)); // upper tile, ignore lsb
                     } else {
-                        tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * (oa.characterCode | 0x01)); // lower tile, set lsb
+                        tileAddress = (ushort)(Address.TilesetA + BitsPerAddress * (oa.characterCode | 0x01)); // lower tile, set lsb
                         tileY -= 8;
                     }
                 } else {
@@ -301,7 +301,7 @@ namespace StudioKurage.Emulator.Gameboy
                         tileY = (byte)(7 - tileY);
                     }
 
-                    tileAddress = (ushort)(Address.SpriteTileset + BitsPerAddress * oa.characterCode);
+                    tileAddress = (ushort)(Address.TilesetA + BitsPerAddress * oa.characterCode);
                 }
 
                 int offset = ly * WindowWidth;

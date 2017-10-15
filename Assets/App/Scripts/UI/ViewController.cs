@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace StudioKurage.Emulator.Gameboy
 {
@@ -9,14 +10,10 @@ namespace StudioKurage.Emulator.Gameboy
     {
         [SerializeField] string romName;
 
-        [Header ("Views")]
-        [SerializeField] MoboView moboView;
-        [SerializeField] CpuView cpuView;
-        [SerializeField] MmuView mmuView;
-        [SerializeField] DisassemblyView disassemblyView;
+        [SerializeField] Button[] buttons;
+        [SerializeField] View[] views;
 
         Mobo mobo;
-        Disassembler disassembler;
 
         void Start ()
         {
@@ -25,13 +22,11 @@ namespace StudioKurage.Emulator.Gameboy
 
             // create
             mobo = new Mobo ();
-            disassembler = new Disassembler (mobo.cpu);
 
             // setup view
-            moboView.Setup (mobo);
-            cpuView.Setup (mobo.cpu);
-            mmuView.Setup (mobo.mmu);
-            disassemblyView.Setup (disassembler);
+            foreach (var view in views) {
+                view.Setup (mobo);
+            }
 
             // load default rom
             string filename = string.Format ("{0}/App/Resources/Roms/{1}.gb", Application.dataPath, romName);
@@ -44,6 +39,13 @@ namespace StudioKurage.Emulator.Gameboy
             byte[] rom = File.ReadAllBytes (filename);
 
             mobo.LoadRom (rom);
+        }
+
+        public void SwitchView (Button button)
+        {
+            int index = button.transform.GetSiblingIndex ();
+            var view = views [index];
+            view.gameObject.SetActive (!view.gameObject.activeSelf);
         }
     }
 }

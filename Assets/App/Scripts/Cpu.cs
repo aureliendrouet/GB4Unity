@@ -16,16 +16,22 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Reset ()
         {
+            // registers
             af = 0x01B0;
             bc = 0x0013;
             de = 0x00D8;
             hl = 0x014D;
             pc = (ushort)(mmu.biosActive ? 0x0000 : 0x0100);
             sp = 0xFFFE;
+            // clocks
             mc = 0;
-            cc = 0;
-            imc = 0;
-            icc = 0;
+            lmc = 0;
+            // interrupts
+            ime = false;
+            diPendingCount = -1;
+            eiPendingCount = -1;
+            stp = false;
+            hlt = false;
         }
 
         public ushort ReadOpcode ()
@@ -39,12 +45,23 @@ namespace StudioKurage.Emulator.Gameboy
             ExecOpcode (opcode);
         }
 
+        Instruction[] instructions;
+
         public void ExecOpcode (byte opcode)
         {
-            var instr = map [opcode];
-            instr (this);
-            mc += imc;
-            cc += icc;
+            if (opcode == 0xCB) {
+                timing = cbtiming;
+                instructions = cbmap;
+                opcode = mmu.rb (pc++);
+            } else {
+                timing = atiming;
+                instructions = map;
+            }
+
+            instructions[opcode] (this);
+            lmc = timing[opcode];
+            mc += lmc;
+
             if (mmu.biosActive && pc == 0x0100) {
                 mmu.biosActive = false;
             }

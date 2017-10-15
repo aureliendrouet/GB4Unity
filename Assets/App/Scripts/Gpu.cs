@@ -81,11 +81,12 @@ namespace StudioKurage.Emulator.Gameboy
         {
             lcdc = mmu.rb (Address.Lcdc);
             stat = mmu.rb (Address.Stat);
-            wy = (short)mmu.rb (Address.Scy);
-            wx = (short)mmu.rb (Address.Scx);
+            scy = (short)mmu.rb (Address.Scy);
+            scx = (short)mmu.rb (Address.Scx);
             ly = mmu.rb (Address.Ly);
             lyc = mmu.rb (Address.Lyc);
-            irr = mmu.rb (Address.Irr);
+            wy = (short)mmu.rb (Address.Wy);
+            wx = (short)mmu.rb (Address.Wx);
         }
 
         void WriteMemory ()
@@ -94,7 +95,6 @@ namespace StudioKurage.Emulator.Gameboy
             mmu.wb (Address.Stat, stat);
             mmu.wb (Address.Ly, ly);
             mmu.wb (Address.Lyc, lyc);
-            mmu.wb (Address.Irr, irr);
         }
 
         void TickOam ()
@@ -118,7 +118,7 @@ namespace StudioKurage.Emulator.Gameboy
 
                 SetLcdMode (LcdMode.Hblank);
                 if (hblankEnabled) {
-                    SetFlag (ref irr, (byte)IrrFlag.LcdStat);
+                    mmu.RequestInterrupt(InterruptFlag.LcdStat);
                 }
             }
         }
@@ -134,13 +134,13 @@ namespace StudioKurage.Emulator.Gameboy
 
                     SetLcdMode (LcdMode.Vblank);
                     if (vblankEnabled) {
-                        SetFlag (ref irr, (byte)IrrFlag.LcdStat);
+                        mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
-                    SetFlag (ref irr, (byte)IrrFlag.Vblank);
+                    mmu.RequestInterrupt(InterruptFlag.Vblank);
                 } else {
                     SetLcdMode (LcdMode.Oam);
                     if (oamEnabled) {
-                        SetFlag (ref irr, (byte)IrrFlag.LcdStat);
+                        mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
                 }
             }
@@ -157,7 +157,7 @@ namespace StudioKurage.Emulator.Gameboy
 
                     SetLcdMode (LcdMode.Oam);
                     if (oamEnabled) {
-                        SetFlag (ref irr, (byte)IrrFlag.LcdStat);
+                        mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
                 }
             }

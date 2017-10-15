@@ -9,7 +9,7 @@ namespace StudioKurage.Emulator.Gameboy
         public Cpu cpu;
         public Mmu mmu;
         public Gpu gpu;
-        public Audio audio;
+        public Apu apu;
         public Timer timer;
 
         public Mobo ()
@@ -17,7 +17,7 @@ namespace StudioKurage.Emulator.Gameboy
             mmu = new Mmu ();
             cpu = new Cpu (mmu);
             gpu = new Gpu (mmu);
-            audio = new Audio (mmu);
+            apu = new Apu (mmu);
             timer = new Timer (mmu);
         }
 
@@ -25,7 +25,7 @@ namespace StudioKurage.Emulator.Gameboy
         {
             cpu.Reset ();
             mmu.Reset ();
-            audio.Reset ();
+            apu.Reset ();
             gpu.Reset ();
             timer.Reset ();
         }
@@ -37,11 +37,24 @@ namespace StudioKurage.Emulator.Gameboy
 
         public long Tick ()
         {
-            cpu.ExecNextOpcode ();
-            audio.Tick (cpu.imc);
-            gpu.Tick (cpu.imc);
-            timer.Tick (cpu.imc);
-            return cpu.imc;
+            long cycles;
+
+            if (!cpu.hlt) {
+                cpu.ExecNextOpcode ();
+                cycles = cpu.lmc;
+            } else {
+                cycles = 1;
+            }
+
+            cpu.CheckInterrupts ();
+
+            if (!cpu.stp) {
+                apu.Tick (cycles);
+                gpu.Tick (cycles);
+                timer.Tick (cycles);
+            }
+
+            return cycles;
         }
     }
 }

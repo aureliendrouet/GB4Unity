@@ -6,15 +6,23 @@ namespace StudioKurage.Emulator.Gameboy
 {
     public partial class Cpu
     {
-        public long mc;  // machin cycle
-        public long cc;  // clock cycle
-        public long imc; // machin cycle of last instruction
-        public long icc; // clock cycle of last instruction
+        // machin cycles
+        public long mc;
 
-        public long m {
-            set {
-                imc = value;
-                icc = value * 4; // always equals m * 4
+        // clock cycles
+        public long cc {
+            get {
+                return mc * 4;
+            }
+        }
+
+        // last instruction machin cycles
+        public long lmc;
+
+        // last instruction clock cycles
+        public long lcc {
+            get {
+                return lmc * 4;
             }
         }
     }

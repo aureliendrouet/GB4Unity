@@ -34,11 +34,14 @@ namespace StudioKurage.Emulator.Gameboy
 {
     public class Mmu
     {
-        // FFFF - interupt enable register
-        protected byte[] ie = new byte[1];
+        // FFFF - interrupt enable register
+        public byte ie;
 
         // FF80-FFFE - zero page
         protected byte[] zram = new byte[127];
+
+        // FF0F - interrupt request register
+        public byte ir;
 
         // FEA0-FF7F - Memory-mapped I/O
         protected byte[] mmio = new byte[224];
@@ -108,7 +111,8 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Reset ()
         {
-            Array.Clear (ie, 0, ie.Length);
+            ie = 0;
+            ir = 0;
             Array.Clear (zram, 0, zram.Length);
             Array.Clear (mmio, 0, mmio.Length);
             Array.Clear (oam, 0, oam.Length);
@@ -242,7 +246,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         private void wbr (ushort address, byte value)
         {
-            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_H)) {
+            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
                 mbc.rwb ((ushort)(address - Address.RamBank_L), value);
             } else {
                 byte[] mem;
@@ -255,15 +259,21 @@ namespace StudioKurage.Emulator.Gameboy
         // read byte
         public byte rb (ushort address)
         {
-            if (biosActive && address < Address.Bios) {
+            if (biosActive && address < Address.Bios_M) {
                 return bios [address];
             }
-            if (address >= Address.Audio_L && address <= Address.Audio_H) {
+            if (address >= Address.Apu_L && address <= Address.Apu_M) {
 //                return audio.rr(address);
                 return 0;
             }
-            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_H)) {
+            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
                 return mbc.rrb ((ushort)(address - Address.RamBank_L));
+            }
+            if (address == Address.InterruptRequest) {
+                return ir;
+            }
+            if (address == Address.InterruptEnable) {
+                return ie;
             }
             byte[] memory;
             ushort resolvedAddress;
@@ -275,24 +285,32 @@ namespace StudioKurage.Emulator.Gameboy
         // write byte
         public void wb (ushort address, byte value)
         {
-            if (address >= Address.Audio_L && address <= Address.Audio_H) {
-                //audio.wb(address, value);
+            if (address >= Address.Apu_L && address <= Address.Apu_M) {
+                //apu.wb(address, value);
                 return;
             }
-            if (address <= Address.RomBank_H) {
+            if (address <= Address.RomBank_M) {
                 mbc.wb (address, value);
                 return;
             }
-            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_H)) {
+            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
                 mbc.rwb ((ushort)(address - Address.RamBank_L), value);
                 return;
             }
             if (address == Address.Dma) {
-                TransfertDMA (value);
+                TransfertDma (value);
                 return;
             }
-            if (address == Address.DividerTimer) {
-                TrapDividerRegister();
+            if (address == Address.TimerDivider) {
+                TrapDividerRegister ();
+                return;
+            }
+            if (address == Address.InterruptRequest) {
+                ir = value;
+                return;
+            }
+            if (address == Address.InterruptEnable) {
+                ie = value;
                 return;
             }
 
@@ -335,49 +353,44 @@ namespace StudioKurage.Emulator.Gameboy
 
         void ResolveMemoryAddress (ushort address, out byte[] memory, out ushort resolvedAddress)
         {
-            if (address <= Address.Rom_H) {
+            if (address <= Address.Rom_M) {
                 memory = mbc.rom;
                 resolvedAddress = address;
                 return;
             }
-            if ((address >= Address.RomBank_L) && (address <= Address.RomBank_H)) {
+            if ((address >= Address.RomBank_L) && (address <= Address.RomBank_M)) {
                 memory = mbc.romBank;
                 resolvedAddress = (ushort)(address - Address.RomBank_L);
                 return;
             }
-            if ((address >= Address.Vram_L) && (address <= Address.Vram_H)) {
+            if ((address >= Address.Vram_L) && (address <= Address.Vram_M)) {
                 memory = vram;
                 resolvedAddress = (ushort)(address - Address.Vram_L);
                 return;
             }
-            if ((address >= Address.Wram_L) && (address <= Address.Wram_H)) {
+            if ((address >= Address.Wram_L) && (address <= Address.Wram_M)) {
                 memory = wram;
                 resolvedAddress = (ushort)(address - Address.Wram_L);
                 return;
             }
-            if ((address >= Address.Wram_Echo_L) && (address <= Address.Wram_Echo_H)) {
+            if ((address >= Address.Wram_Echo_L) && (address <= Address.Wram_Echo_M)) {
                 memory = wram;
                 resolvedAddress = (ushort)(address - Address.Wram_Echo_L);
                 return;
             }
-            if ((address >= Address.Oam_L) && (address <= Address.Oam_H)) {
+            if ((address >= Address.Oam_L) && (address <= Address.Oam_M)) {
                 memory = oam;
                 resolvedAddress = (ushort)(address - Address.Oam_L);
                 return;
             }
-            if ((address >= Address.Mmio_L) && (address <= Address.Mmio_H)) {
+            if ((address >= Address.Mmio_L) && (address <= Address.Mmio_M)) {
                 memory = mmio;
                 resolvedAddress = (ushort)(address - Address.Mmio_L);
                 return;
             }
-            if ((address >= Address.Zram_L) && (address <= Address.Zram_H)) {
+            if ((address >= Address.Zram_L) && (address <= Address.Zram_M)) {
                 memory = zram;
                 resolvedAddress = (ushort)(address - Address.Zram_L);
-                return;
-            }
-            if (address == Address.Ie) {
-                memory = ie;
-                resolvedAddress = 0;
                 return;
             }
 
@@ -386,19 +399,39 @@ namespace StudioKurage.Emulator.Gameboy
             resolvedAddress = 0;
         }
 
-        void TransfertDMA(byte value)
-        {
-            // address is value * 100
-            byte address = (byte)(value << 8);
+        #region Direct Memory Access
 
-            for (int i = 0; i < oam.Length; ++i) {
-                oam[i] = rb (address + i);
+        public void Dma (ushort dest, ushort src, ushort n)
+        {
+            for (; n > 0; n--) {
+                wb (dest++, rb (src++));
             }
         }
 
-        void TrapDividerRegister()
+        void TransfertDma (byte value)
         {
-            mmio [Address.DividerTimer - Address.Mmio_L] = 0;
+            // address is value * 100
+            ushort address = (ushort)(value << 8);
+
+            for (int i = 0; i < oam.Length; ++i) {
+                oam [i] = rb (address + i);
+            }
         }
+
+        #endregion
+
+        void TrapDividerRegister ()
+        {
+            mmio [Address.TimerDivider - Address.Mmio_L] = 0;
+        }
+
+        #region Interrupt
+
+        public void RequestInterrupt(byte flag)
+        {
+            wb (Address.InterruptRequest, rb (Address.InterruptRequest) | flag);
+        }
+
+        #endregion
     }
 }

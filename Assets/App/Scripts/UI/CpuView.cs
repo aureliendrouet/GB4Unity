@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace StudioKurage.Emulator.Gameboy
 {
-    public class CpuView : MonoBehaviour
+    public class CpuView : View
     {
         [SerializeField] InputField[] uint8Registers;
         [SerializeField] InputField[] uint16Registers;
@@ -18,9 +18,10 @@ namespace StudioKurage.Emulator.Gameboy
 
         Cpu cpu;
 
-        public void Setup (Cpu _)
+        public override void Setup (Mobo _)
         {
-            cpu = _;
+            base.Setup (_);
+            cpu = _.cpu;
         }
 
         public void UpdateRegisterA (string value)
@@ -91,54 +92,58 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void UpdateClockIMC (string value)
         {
-            cpu.imc = Convert.ToInt32 (value);
+            cpu.lmc = Convert.ToInt32 (value);
             Refresh ();
         }
 
         public void UpdateFlagZF (string value)
         {
-            cpu.zf = value == "1" ? true : false;
+            cpu.zf = value == "1";
             Refresh ();
         }
 
         public void UpdateFlagSF (string value)
         {
-            cpu.sf = value == "1" ? true : false;
+            cpu.sf = value == "1";
             Refresh ();
         }
 
         public void UpdateFlagHCF (string value)
         {
-            cpu.hcf = value == "1" ? true : false;
+            cpu.hcf = value == "1";
             Refresh ();
         }
 
         public void UpdateFlagCF (string value)
         {
-            cpu.cf = value == "1" ? true : false;
+            cpu.cf = value == "1";
             Refresh ();
         }
 
         public void UpdateSignalIME (string value)
         {
-            cpu.ime = Convert.ToInt32 (value);
+            cpu.ime = value == "1";
             Refresh ();
         }
 
         public void UpdateSignalHLT (string value)
         {
-            cpu.hlt = Convert.ToInt32 (value);
+            cpu.hlt = value == "1";
             Refresh ();
         }
 
         public void UpdateSignalSTP (string value)
         {
-            cpu.stp = Convert.ToInt32 (value);
+            cpu.stp = value == "1";
             Refresh ();
         }
 
         public void Refresh ()
         {
+            if (!gameObject.activeInHierarchy) {
+                return;
+            }
+
             // registers 8 bits
             uint8Registers [0].text = String.Format (UInt8RegisterTemplate, cpu.a);
             uint8Registers [1].text = String.Format (UInt8RegisterTemplate, cpu.f);
@@ -163,9 +168,9 @@ namespace StudioKurage.Emulator.Gameboy
             clocks [0].text = cpu.mc.ToString ();
 
             // signals
-            signals [0].text = cpu.ime.ToString ();
-            signals [1].text = cpu.hlt.ToString ();
-            signals [2].text = cpu.stp.ToString ();
+            signals [0].text = cpu.ime ? "1" : "0";
+            signals [1].text = cpu.hlt ? "1" : "0";
+            signals [2].text = cpu.stp ? "1" : "0";
         }
     }
 }

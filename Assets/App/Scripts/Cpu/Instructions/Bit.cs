@@ -11,7 +11,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT0h = (_) => { BIT(_, 0x01, _.h) ; };
         static Instruction BIT0l = (_) => { BIT(_, 0x01, _.l) ; };
         static Instruction BIT0a = (_) => { BIT(_, 0x01, _.a) ; };
-        static Instruction BIT0m = (_) => { BIT(_, 0x01, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT0m = (_) => { BIT(_, 0x01, _.mmu.rb(_.hl)); };
 
         // 0x02 = 0000 0010
         static Instruction BIT1b = (_) => { BIT(_, 0x02, _.b) ; };
@@ -21,7 +21,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT1h = (_) => { BIT(_, 0x02, _.h) ; };
         static Instruction BIT1l = (_) => { BIT(_, 0x02, _.l) ; };
         static Instruction BIT1a = (_) => { BIT(_, 0x02, _.a) ; };
-        static Instruction BIT1m = (_) => { BIT(_, 0x02, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT1m = (_) => { BIT(_, 0x02, _.mmu.rb(_.hl)); };
 
         // 0x04 = 0000 0100
         static Instruction BIT2b = (_) => { BIT(_, 0x04, _.b) ; };
@@ -31,7 +31,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT2h = (_) => { BIT(_, 0x04, _.h) ; };
         static Instruction BIT2l = (_) => { BIT(_, 0x04, _.l) ; };
         static Instruction BIT2a = (_) => { BIT(_, 0x04, _.a) ; };
-        static Instruction BIT2m = (_) => { BIT(_, 0x04, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT2m = (_) => { BIT(_, 0x04, _.mmu.rb(_.hl)); };
 
         // 0x08 = 0000 1000
         static Instruction BIT3b = (_) => { BIT(_, 0x08, _.b) ; };
@@ -41,7 +41,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT3h = (_) => { BIT(_, 0x08, _.h) ; };
         static Instruction BIT3l = (_) => { BIT(_, 0x08, _.l) ; };
         static Instruction BIT3a = (_) => { BIT(_, 0x08, _.a) ; };
-        static Instruction BIT3m = (_) => { BIT(_, 0x08, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT3m = (_) => { BIT(_, 0x08, _.mmu.rb(_.hl)); };
 
         // 0x10 = 0001 0000
         static Instruction BIT4b = (_) => { BIT(_, 0x10, _.b) ; };
@@ -51,7 +51,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT4h = (_) => { BIT(_, 0x10, _.h) ; };
         static Instruction BIT4l = (_) => { BIT(_, 0x10, _.l) ; };
         static Instruction BIT4a = (_) => { BIT(_, 0x10, _.a) ; };
-        static Instruction BIT4m = (_) => { BIT(_, 0x10, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT4m = (_) => { BIT(_, 0x10, _.mmu.rb(_.hl)); };
 
         // 0x20 = 0010 0000
         static Instruction BIT5b = (_) => { BIT(_, 0x20, _.b) ; };
@@ -61,7 +61,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT5h = (_) => { BIT(_, 0x20, _.h) ; };
         static Instruction BIT5l = (_) => { BIT(_, 0x20, _.l) ; };
         static Instruction BIT5a = (_) => { BIT(_, 0x20, _.a) ; };
-        static Instruction BIT5m = (_) => { BIT(_, 0x20, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT5m = (_) => { BIT(_, 0x20, _.mmu.rb(_.hl)); };
 
         // 0x40 = 0100 0000
         static Instruction BIT6b = (_) => { BIT(_, 0x40, _.b) ; };
@@ -71,7 +71,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT6h = (_) => { BIT(_, 0x40, _.h) ; };
         static Instruction BIT6l = (_) => { BIT(_, 0x40, _.l) ; };
         static Instruction BIT6a = (_) => { BIT(_, 0x40, _.a) ; };
-        static Instruction BIT6m = (_) => { BIT(_, 0x40, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT6m = (_) => { BIT(_, 0x40, _.mmu.rb(_.hl)); };
 
         // 0x80 = 1000 0000
         static Instruction BIT7b = (_) => { BIT(_, 0x80, _.b) ; };
@@ -81,7 +81,7 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction BIT7h = (_) => { BIT(_, 0x80, _.h) ; };
         static Instruction BIT7l = (_) => { BIT(_, 0x80, _.l) ; };
         static Instruction BIT7a = (_) => { BIT(_, 0x80, _.a) ; };
-        static Instruction BIT7m = (_) => { BIT(_, 0x80, _.mmu.rb(_.hl), 3); };
+        static Instruction BIT7m = (_) => { BIT(_, 0x80, _.mmu.rb(_.hl)); };
 
         // FE = 1111 1110
         static Instruction RES0b  = (_) => { RES(_, 0xFE, ref _.b); };
@@ -244,18 +244,18 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction SET7hl = (_) => { SETHL(_, 0x80); };
 
         // set if bit b of register r is 0 else reset
-        static void BIT  (Cpu _, int v, byte r, int t = 2) { _.zf = (r & v) == 0; _.sf = false; _.hcf = true; _.m = t; }
+        static void BIT  (Cpu _, int v, byte r) { _.zf = (r & v) == 0; _.sf = false; _.hcf = true; }
 
         // reset bit b in register r
-        static void RES  (Cpu _, int v, ref byte r) { r = (byte) (r & v); _.m = 2; }
+        static void RES  (Cpu _, int v, ref byte r) { r = (byte) (r & v); }
 
         // set bit b in register r
-        static void SET  (Cpu _, int v, ref byte r) { r = (byte) (r | v); _.m = 2; }
+        static void SET  (Cpu _, int v, ref byte r) { r = (byte) (r | v); }
 
         // reset bit b at memory of register hl
-        static void RESHL(Cpu _, int v) { _.mmu.wb(_.hl, (byte)(_.mmu.rb(_.hl) & v)); _.m = 4; }
+        static void RESHL(Cpu _, int v) { _.mmu.wb(_.hl, (byte)(_.mmu.rb(_.hl) & v)); }
 
         // set bit b at memory of register hl
-        static void SETHL(Cpu _, int v) { _.mmu.wb(_.hl, (byte)(_.mmu.rb(_.hl) | v)); _.m = 4; }
+        static void SETHL(Cpu _, int v) { _.mmu.wb(_.hl, (byte)(_.mmu.rb(_.hl) | v)); }
     }
 }
