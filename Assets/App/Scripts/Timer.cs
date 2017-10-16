@@ -28,7 +28,7 @@ namespace StudioKurage.Emulator.Gameboy
         //
         // Speed
         // 00:   4096 Hz
-        // 01: 262144 Hz (base)
+        // 01: 262144 Hz (base speed)
         // 10:  65536 Hz
         // 11:  16384 Hz
         //
@@ -37,6 +37,8 @@ namespace StudioKurage.Emulator.Gameboy
         // 4194304 Hz /  65536 Hz / 16 (base) = 4
         // 4194304 Hz /  16384 Hz / 16 (base) = 16
         byte controller;
+
+        public static byte TimerControllerEnabledFlag = 0x04;
 
         // t-clock (clock cycles)
         long tc;
@@ -47,7 +49,8 @@ namespace StudioKurage.Emulator.Gameboy
         // div clock
         long dc;
 
-        const int TicksPerSeconds = 16;
+        // ticks per second at base speed
+        const int TicksPerSecondsAtBaseSpeed = 16;
 
         int[] timerFrequencies = new int[] {
             64, 
@@ -55,8 +58,6 @@ namespace StudioKurage.Emulator.Gameboy
             4,  
             16  
         };
-
-        public static byte TimerControllerEnabledFlag = 0x04;
 
         public Timer (Mmu mmu)
         {
@@ -82,13 +83,13 @@ namespace StudioKurage.Emulator.Gameboy
             tc += mc * 4;
 
             // timer ticks occur at 1/16 the CPU cycles
-            while (tc >= TicksPerSeconds) {
-                tc -= TicksPerSeconds;
+            while (tc >= TicksPerSecondsAtBaseSpeed) {
+                tc -= TicksPerSecondsAtBaseSpeed;
                 bc++;
                 dc++;
 
                 // divider clock
-                if (dc == TicksPerSeconds) {
+                if (dc == TicksPerSecondsAtBaseSpeed) {
                     divider++;
                     dc = 0;
                 }

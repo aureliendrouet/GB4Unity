@@ -10,22 +10,28 @@ namespace StudioKurage.Emulator.Gameboy
     public class EmulatorView : View
     {
         [Header ("UI")]
+        [SerializeField, Range (0.01f, 1f)] float speed;
         [SerializeField] Button runButton;
         [SerializeField] Button pauseButton;
 
         [Header ("Graphics")]
+        [SerializeField] RectTransform panel;
+        [SerializeField] RectTransform screen;
         [SerializeField] RenderTexture renderTexture;
         [SerializeField] Material material;
         [SerializeField] Color[] colors;
         Texture2D texture;
 
-        public void Run ()
+        void Awake ()
         {
             texture = new Texture2D (renderTexture.width, renderTexture.height, TextureFormat.ARGB32, false);
             texture.filterMode = FilterMode.Point;
             texture.wrapMode = TextureWrapMode.Clamp;
             material.mainTexture = texture;
+        }
 
+        public void Run ()
+        {
             StartCoroutine (RunAsync ());
             runButton.gameObject.SetActive (false);
             pauseButton.gameObject.SetActive (true);
@@ -36,7 +42,6 @@ namespace StudioKurage.Emulator.Gameboy
             float cyclesPerSecond = 4194304; // 4.194304 MHz
             long cycles;
             long maxCycles;
-            float speed = 0.1f;
 
             while (true) {
                 cycles = 0;
@@ -77,13 +82,27 @@ namespace StudioKurage.Emulator.Gameboy
 
             for (int i = 0; i < frame.Length; i++) {
                 int x = i % Gpu.WindowWidth;
-                int y = i / Gpu.WindowWidth;
+                int y = Gpu.WindowHeight - (i / Gpu.WindowWidth) - 1;
                 texture.SetPixel (x, y, colors [frame [i]]);
             }
 
             texture.Apply ();
 
             RenderTexture.active = null;
+        }
+
+        Vector2[] screenSizes = new Vector2[] {
+            new Vector2(160, 144),
+            new Vector2(320, 288),
+            new Vector2(480, 432),
+            new Vector2(640, 576),
+        };
+        Vector2 panelOffsets = new Vector2 (32f, 120f);
+
+        public void SetZoom (int i)
+        {
+            panel.sizeDelta = screenSizes [i] + panelOffsets;
+            screen.sizeDelta = screenSizes [i];
         }
     }
 }

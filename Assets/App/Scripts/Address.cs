@@ -92,7 +92,7 @@ namespace StudioKurage.Emulator.Gameboy
         public const ushort TimerLo          = 0xFF03;
         public const ushort TimerDivider     = 0xFF04;
         public const ushort TimerCounter     = 0xFF05;
-        public const ushort TimerModulator      = 0xFF06;
+        public const ushort TimerModulator   = 0xFF06;
         public const ushort TimerController  = 0xFF07;
 
         // Apu
