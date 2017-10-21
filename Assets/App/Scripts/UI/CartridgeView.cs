@@ -18,7 +18,7 @@ namespace StudioKurage.Emulator.Gameboy
             mmu = mobo.mmu;
         }
 
-        public void OnEnable ()
+        void OnEnable ()
         {
             Refresh ();
         }

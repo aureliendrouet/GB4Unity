@@ -12,19 +12,20 @@ namespace StudioKurage.Emulator.Gameboy
 
         public string Disassemble ()
         {
-            ushort opcode; string assembly;
+            ushort opcode;
+            string assembly;
 
             Disassemble (cpu.opcode, out opcode, out assembly);
 
             ushort nextPc = (ushort)(cpu.pc + 1);
 
             if (assembly.Contains ("${0:X4}")) {
-                assembly = string.Format (assembly, cpu.mmu.rw(nextPc));
+                assembly = string.Format (assembly, cpu.mmu.rw (nextPc));
             } else if (assembly.Contains ("${0:X2}")) {
-                assembly = string.Format (assembly, cpu.mmu.rb(nextPc));
+                assembly = string.Format (assembly, cpu.mmu.rb (nextPc));
             }
 
-            return string.Format("{0:X4} {1:X4}   {2}", cpu.pc, opcode, assembly);
+            return string.Format ("{0:X4} {1:X4}   {2}", cpu.pc, opcode, assembly);
         }
 
         void Disassemble (ushort opcode, out ushort printOpcode, out string assembly)

@@ -58,46 +58,46 @@ namespace StudioKurage.Emulator.Gameboy
             public static byte LcdEnabled                 = 0x80;
         }
 
-        bool lcdEnabled {
+        public bool lcdEnabled {
             get {
                 return (lcdc & LcdcFlag.LcdEnabled) == LcdcFlag.LcdEnabled;
             }
         }
-        bool backgroundEnabled {
+        public bool backgroundEnabled {
             get {
                 return (lcdc & LcdcFlag.BackgroundEnabled) == LcdcFlag.BackgroundEnabled;
             }
         }
-        bool windowEnabled {
+        public bool windowEnabled {
             get {
                 return (lcdc & LcdcFlag.WindowEnabled) == LcdcFlag.WindowEnabled;
             }
         }
-        bool objectEnabled {
+        public bool objectEnabled {
             get {
                 return (lcdc & LcdcFlag.ObjectEnabled) == LcdcFlag.ObjectEnabled;
             }
         }
 
-        bool backgroundTilesetSelection {
+        public bool backgroundTilesetSelection {
             get {
                 return (lcdc & LcdcFlag.BackgroundTilesetSelection) == LcdcFlag.BackgroundTilesetSelection;
             }
         }
 
-        bool backgroundTilemapSelection {
+        public bool backgroundTilemapSelection {
             get {
                 return (lcdc & LcdcFlag.BackgroundTilemapSelection) == LcdcFlag.BackgroundTilemapSelection;
             }
         }
 
-        bool windowTilemapSelection {
+        public bool windowTilemapSelection {
             get {
                 return (lcdc & LcdcFlag.WindowTilemapSelection) == LcdcFlag.WindowTilemapSelection;
             }
         }
 
-        bool largeTile {
+        public bool largeTile {
             get {
                 return (lcdc & LcdcFlag.TileSizeSelection) == LcdcFlag.TileSizeSelection;
             }
@@ -124,7 +124,7 @@ namespace StudioKurage.Emulator.Gameboy
         // 0X00 0000 LYC = LY Interupt
         byte stat;
 
-        enum LcdMode : byte
+        public enum LcdMode : byte
         {
             Hblank = 0, // horizontal blank period
             Vblank = 1, // vertical blank period
@@ -141,7 +141,10 @@ namespace StudioKurage.Emulator.Gameboy
             public static byte LyLyc  = 0x40;
         }
 
-        bool matched {
+        public bool matched {
+            get {
+                return (stat & StatFlag.Match) == StatFlag.Match;
+            }
             set {
                 if (value) {
                     stat = (byte)(stat | StatFlag.Match);
@@ -151,25 +154,25 @@ namespace StudioKurage.Emulator.Gameboy
             }
         }
 
-        bool hblankEnabled {
+        public bool hblankEnabled {
             get {
                 return (stat & StatFlag.Hblank) == StatFlag.Hblank;
             }
         }
 
-        bool vblankEnabled {
+        public bool vblankEnabled {
             get {
                 return (stat & StatFlag.Vblank) == StatFlag.Vblank;
             }
         }
 
-        bool oamEnabled {
+        public bool oamEnabled {
             get {
                 return (stat & StatFlag.Oam) == StatFlag.Oam;
             }
         }
 
-        bool lyLycEnabled {
+        public bool lyLycEnabled {
             get {
                 return (stat & StatFlag.LyLyc) == StatFlag.LyLyc;
             }
@@ -177,29 +180,29 @@ namespace StudioKurage.Emulator.Gameboy
 
         // scroll y
         // the y position of the background where to start drawing the viewing area from 
-        short scy;
+        public short scy;
 
         // scroll x
         // the x position of the background to start drawing the viewing area from
-        short scx;
+        public short scx;
 
         // line
-        byte ly;
+        public byte ly;
 
         // line control
-        byte lyc;
+        public byte lyc;
 
         // window y
         // the y Position of the viewing area to start drawing the window from
-        short wy;
+        public short wy;
 
         // window x
         // the x Position of the viewing area to start drawing the window from
-        short wx;
+        public short wx;
 
         #region Register Utility
 
-        LcdMode lcdMode;
+        public LcdMode lcdMode;
 
         void SetLcdMode (LcdMode mode)
         {
@@ -212,15 +215,15 @@ namespace StudioKurage.Emulator.Gameboy
             stat = (byte)((stat & 0xFC) | (byte)mode);
         }
 
-        void CompareLyLyc ()
+        void CompareLyLyc (bool ime)
         {
             if (ly == lyc) {
                 matched = true;
-                if (lyLycEnabled) { 
-                    mmu.RequestInterrupt(InterruptFlag.LcdStat);
-                }
             } else {
                 matched = false;
+            }
+            if (ime && lyLycEnabled) { 
+                mmu.RequestInterrupt(InterruptFlag.LcdStat);
             }
         }
 

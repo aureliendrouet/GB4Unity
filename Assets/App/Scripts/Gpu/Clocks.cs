@@ -4,13 +4,14 @@ namespace StudioKurage.Emulator.Gameboy
     public partial class Gpu
     {
         // cycles
-        const int MachinCyclesPerHblank = 51;
-        const int MachinCyclesPerVblank = 114;
-        const int MachinCyclesPerOam    = 20;
-        const int MachinCyclesPerVram   = 43;
-        const int CyclesPerFrame        = 17556;
+        const int HblankCycles = 207;
+        const int VblankCycles = 4560;
+        const int OamCycles    = 83;
+        const int VramCycles   = 175;
 
-        long mc;
+        const int LineCycles = 456;
+
+        long cc;
         long delay;
     }
 }

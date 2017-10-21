@@ -9,13 +9,6 @@ namespace StudioKurage.Emulator.Gameboy
         // machin cycles
         public long mc;
 
-        // clock cycles
-        public long cc {
-            get {
-                return mc * 4;
-            }
-        }
-
         // last instruction machin cycles
         public long lmc;
 

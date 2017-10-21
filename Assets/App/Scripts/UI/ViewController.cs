@@ -9,8 +9,6 @@ namespace StudioKurage.Emulator.Gameboy
     public class ViewController : MonoBehaviour
     {
         [SerializeField] string romName;
-
-        [SerializeField] Button[] buttons;
         [SerializeField] View[] views;
 
         Mobo mobo;

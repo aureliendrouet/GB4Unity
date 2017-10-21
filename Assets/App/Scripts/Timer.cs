@@ -75,12 +75,12 @@ namespace StudioKurage.Emulator.Gameboy
             dc = 0;
         }
 
-        public void Tick (long mc)
+        public void Tick (long cc)
         {
             LoadMemory ();
 
             // m-clock increments at 1/4 the m-clock rate
-            tc += mc * 4;
+            tc += cc;
 
             // timer ticks occur at 1/16 the CPU cycles
             while (tc >= TicksPerSecondsAtBaseSpeed) {

@@ -37,24 +37,24 @@ namespace StudioKurage.Emulator.Gameboy
 
         public long Tick ()
         {
-            long mc;
-
             if (!cpu.hlt) {
                 cpu.ExecNextOpcode ();
-                mc = cpu.lmc;
             } else {
-                mc = 1;
+                cpu.lmc = 1;
             }
 
             cpu.CheckInterrupts ();
 
+            cpu.mc += cpu.lmc;
+            long cc = cpu.lcc;
+
             if (!cpu.stp) {
-                apu.Tick (mc);
-                gpu.Tick (mc);
-                timer.Tick (mc);
+                apu.Tick (cc);
+                gpu.Tick (cc, cpu.ime);
+                timer.Tick (cc);
             }
 
-            return mc;
+            return cc;
         }
     }
 }

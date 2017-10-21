@@ -23,6 +23,21 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void CheckInterrupts ()
         {
+            // mask off disabled interrupts
+            byte flags = (byte)(mmu.ir & mmu.ie);
+
+            // check power mode
+            if (!stp) {
+                if (flags > 0) {
+                    hlt = false;
+                }
+            } else {
+                if ((flags & InterruptFlag.Joypad) == InterruptFlag.Joypad) {
+                    stp = false;
+                    hlt = false;
+                }
+            }
+
             // when EI or DI is used to change the IME
             // the change takes effect after the next instruction is executed
             if (diPendingCount >= 0) {
@@ -42,9 +57,6 @@ namespace StudioKurage.Emulator.Gameboy
             }
 
             if (ime) {
-                // mask off disabled interrupts
-                byte flags = (byte)(mmu.ir & mmu.ie);
-
                 if ((flags & InterruptFlag.Joypad) == InterruptFlag.Joypad) {
                     Interrupt (Address.InterruptHandler_Joypad, InterruptFlag.Joypad);
                 }
@@ -83,7 +95,6 @@ namespace StudioKurage.Emulator.Gameboy
 
             // update clock
             lmc += 5;
-            mc  += 5;
         }
     }
 }

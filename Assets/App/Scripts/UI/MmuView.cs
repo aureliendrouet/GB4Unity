@@ -11,6 +11,7 @@ namespace StudioKurage.Emulator.Gameboy
         [SerializeField] Transform inputContainer;
         [SerializeField] Transform linkContainer;
         [SerializeField] InputField page;
+        [SerializeField] Transform bios;
 
         InputField[] inputs;
         Button[] buttons;
@@ -41,6 +42,11 @@ namespace StudioKurage.Emulator.Gameboy
             }
         }
 
+        void OnEnable ()
+        {
+            Refresh ();
+        }
+
         public void Refresh ()
         {
             if (!gameObject.activeInHierarchy) {
@@ -55,6 +61,8 @@ namespace StudioKurage.Emulator.Gameboy
                 ushort address = (ushort)(upper << 8 | lower);
                 input.text = string.Format ("{0:X2}", mmu.rb (address));
             }
+
+            bios.gameObject.SetActive (mmu.biosActive);
         }
 
         public UnityAction<string> CreateInputListener (InputField input)

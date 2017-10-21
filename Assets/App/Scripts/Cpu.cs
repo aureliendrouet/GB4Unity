@@ -60,7 +60,6 @@ namespace StudioKurage.Emulator.Gameboy
 
             instructions[opcode] (this);
             lmc = timing[opcode];
-            mc += lmc;
 
             if (mmu.biosActive && pc == 0x0100) {
                 mmu.biosActive = false;

@@ -25,31 +25,35 @@ namespace StudioKurage.Emulator.Gameboy
         {
             SetLcdMode (LcdMode.Vblank);
             ly = VblankLineBegin;
-            mc = 0;
+            cc = 0;
             delay = 0;
             enabled = true;
             frameRendered = false;
             lineRendered = false;
         }
 
-        public void Tick (long imc)
+        public void Tick (long lcc, bool ime)
         {
             LoadMemory ();
 
             frameRendered = false;
 
-            if (lcdEnabled) {
-                if (!enabled && delay == 0) {
-                    EnableLcd ();
-                }
-            } else {
-                if (enabled) {
-                    DisableLcd ();
-                }
+            if (!lcdEnabled) {
+                return;
             }
 
-            if (enabled) {
-                mc += imc;
+//            if (lcdEnabled) {
+//                if (!enabled && delay == 0) {
+//                    EnableLcd ();
+//                }
+//            } else {
+//                if (enabled) {
+//                    DisableLcd ();
+//                }
+//            }
+
+//            if (enabled) {
+                cc += lcc;
 
                 switch (lcdMode) {
 
@@ -58,21 +62,21 @@ namespace StudioKurage.Emulator.Gameboy
                     break;
 
                 case LcdMode.Vram:
-                    TickVram ();
+                    TickVram (ime);
                     break;
 
                 case LcdMode.Hblank:
-                    TickHblank ();
+                    TickHblank (ime);
                     break;
 
                 case LcdMode.Vblank:
-                    TickVblank ();
+                    TickVblank (ime);
                     break;
                 }
-                CompareLyLyc ();
-            } else {
-                TickDisabled (imc);
-            }
+//                CompareLyLyc ();
+//            } else {
+//                TickDisabled (lmc);
+//            }
 
             WriteMemory ();
         }
@@ -91,7 +95,6 @@ namespace StudioKurage.Emulator.Gameboy
 
         void WriteMemory ()
         {
-            mmu.wb (Address.Lcdc, lcdc);
             mmu.wb (Address.Stat, stat);
             mmu.wb (Address.Ly, ly);
             mmu.wb (Address.Lyc, lyc);
@@ -99,114 +102,162 @@ namespace StudioKurage.Emulator.Gameboy
 
         void TickOam ()
         {
-            if (mc >= MachinCyclesPerOam) {
-                mc -= MachinCyclesPerOam;
+            if (cc >= OamCycles) {
+                cc -= OamCycles;
                 SetLcdMode (LcdMode.Vram);
-                lineRendered = false;
+//                lineRendered = false;
             }
         }
 
-        void TickVram ()
+        void TickVram (bool ime)
         {
-            if (!lineRendered && (mc >= (ly > 0 ? 12L : 40L))) {
-                lineRendered = true;
-                RenderScanline ();
-            }
+//            if (!lineRendered && (cc >= (ly > 0 ? 12L : 40L))) {
+//                lineRendered = true;
+//                RenderScanline ();
+//            }
 
-            if (mc >= MachinCyclesPerVram) {
-                mc -= MachinCyclesPerVram;
+            if (cc >= VramCycles) {
+                cc -= VramCycles;
+
+                RenderScanline ();
 
                 SetLcdMode (LcdMode.Hblank);
-                if (hblankEnabled) {
+
+//                DoHdma ();
+
+                if (ime && hblankEnabled) {
                     mmu.RequestInterrupt(InterruptFlag.LcdStat);
                 }
             }
         }
 
-        void TickHblank ()
+        void TickHblank (bool ime)
         {
-            if (mc >= MachinCyclesPerHblank) {
-                mc -= MachinCyclesPerHblank;
+            if (cc >= HblankCycles) {
+                cc -= HblankCycles;
+
                 ly++;
+
+                CompareLyLyc (ime);
 
                 if (ly == VblankLineBegin) {
                     frameRendered = true;
 
                     SetLcdMode (LcdMode.Vblank);
-                    if (vblankEnabled) {
+
+                    mmu.RequestInterrupt(InterruptFlag.Vblank);
+
+                    if (ime && vblankEnabled) {
                         mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
-                    mmu.RequestInterrupt(InterruptFlag.Vblank);
                 } else {
                     SetLcdMode (LcdMode.Oam);
-                    if (oamEnabled) {
+
+                    if (ime && oamEnabled) {
                         mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
                 }
             }
         }
 
-        void TickVblank ()
+        void TickVblank (bool ime)
         {
-            if (mc >= MachinCyclesPerVblank) {
-                mc -= MachinCyclesPerVblank;
+            if (cc >= LineCycles) {
+                cc -= LineCycles;
+
                 ly++;
 
                 if (ly > VblankLineEnd) {
                     ly = 0;
 
                     SetLcdMode (LcdMode.Oam);
-                    if (oamEnabled) {
+
+                    if (ime && oamEnabled) {
                         mmu.RequestInterrupt(InterruptFlag.LcdStat);
                     }
                 }
             }
         }
 
+//        struct Hdma
+//        {
+//            public bool transferActive;
+//            public ushort source;
+//            public ushort destination;
+//            public ushort length;
+//        };
+//
+//        Hdma hdma;
+//
+//        void DoHdma ()
+//        {
+//            if (hdma.transferActive)
+//            {
+//                // hdma only works between this range
+//                if (ly >= 0 && ly <= 143) {
+//                    // transfer $10 bytes
+//                    mmu.TransferDma(hdma.destination, hdma.source, 0x10);
+//
+//                    // advance source $10 bytes
+//                    hdma.source += 0x10;
+//
+//                    // advance destination $10 bytes
+//                    hdma.destination += 0x10;
+//
+//                    // count down the length
+//                    hdma.length -= 0x10;
+//
+//                    if (hdma.length == 0) {
+//                        hdma.transferActive = false;
+//                    }
+//                }
+//            }
+//        }
+
         // lcd is about to be enabled
-        void TickDisabled (long imc)
-        {
-            if (delay > 0) {
-                delay -= imc;
-                if (delay <= 0) {
-                    Reset ();
-                    enabled = true;
-                    mc = (-delay);
-                    delay = 0;
-                    ly = 0;
-                    SetLcdMode (LcdMode.Hblank);
-                    CompareLyLyc ();
-                }
-            } else {
-                mc += imc;
-                if (mc >= CyclesPerFrame) {
-                    mc -= CyclesPerFrame;
-                    frameRendered = true;
-                }
-            }
-        }
+//        void TickDisabled (long imc)
+//        {
+//            if (delay > 0) {
+//                delay -= imc;
+//                if (delay <= 0) {
+//                    Reset ();
+//                    enabled = true;
+//                    cc = (-delay);
+//                    delay = 0;
+//                    ly = 0;
+//                    SetLcdMode (LcdMode.Hblank);
+//                    CompareLyLyc ();
+//                }
+//            } else {
+//                cc += imc;
+//                if (cc >= CyclesPerLine) {
+//                    cc -= CyclesPerLine;
+//                    frameRendered = true;
+//                }
+//            }
+//        }
 
-        void EnableLcd ()
-        {
-            delay = 61;
-        }
-
-        void DisableLcd ()
-        {
-            ly = 0;
-            SetLcdMode (LcdMode.Hblank);
-            enabled = false;
-            mc = 0;
-            delay = 0;
-            enabled = false;
-            frameRendered = false;
-            lineRendered = false;
-            Clear ();
-        }
-
-        void Clear()
-        {
-            System.Array.Clear (frame, 0, frame.Length);
-        }
+//        void EnableLcd ()
+//        {
+//            delay = 61;
+//        }
+//
+//        void DisableLcd ()
+//        {
+//            ly = 0;
+//            SetLcdMode (LcdMode.Hblank);
+//            enabled = false;
+//            cc = 0;
+//            delay = 0;
+//            enabled = false;
+//            frameRendered = false;
+//            lineRendered = false;
+//            Clear ();
+//        }
+//
+//        void Clear()
+//        {
+//            System.Array.Clear (frame, 0, frame.Length);
+//        }
     }
 }

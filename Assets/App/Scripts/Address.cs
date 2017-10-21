@@ -82,11 +82,11 @@ namespace StudioKurage.Emulator.Gameboy
         public const ushort TilesetA       = 0x8000;
         public const ushort TilesetB       = 0x9000;
 
-        public const ushort BackgroundTilemapA = 0x9800;
-        public const ushort BackgroundTilemapB = 0x9C00;
+        public const ushort BackgroundTilemapB = 0x9800;
+        public const ushort BackgroundTilemapA = 0x9C00;
 
-        public const ushort WindowTilemapA = 0x9800;
-        public const ushort WindowTilemapB = 0x9C00;
+        public const ushort WindowTilemapB = 0x9800;
+        public const ushort WindowTilemapA = 0x9C00;
 
         // Timer
         public const ushort TimerLo          = 0xFF03;
@@ -153,13 +153,13 @@ namespace StudioKurage.Emulator.Gameboy
         public const ushort Svbk  = 0xFF70;
 
         // Interrupt
-        public const ushort InterruptHandler_Vblank  = 0x0040;
-        public const ushort InterruptHandler_LcdcStat    = 0x0048;
-        public const ushort InterruptHandler_TimeOverflow   = 0x0050;
-        public const ushort InterruptHandler_SerialTransferComplete  = 0x0058;
-        public const ushort InterruptHandler_Joypad  = 0x0060;
-        public const ushort InterruptRequest         = 0xFF0F;
-        public const ushort InterruptEnable          = 0xFFFF;
+        public const ushort InterruptHandler_Vblank                 = 0x0040;
+        public const ushort InterruptHandler_LcdcStat               = 0x0048;
+        public const ushort InterruptHandler_TimeOverflow           = 0x0050;
+        public const ushort InterruptHandler_SerialTransferComplete = 0x0058;
+        public const ushort InterruptHandler_Joypad                 = 0x0060;
+        public const ushort InterruptRequest                        = 0xFF0F;
+        public const ushort InterruptEnable                         = 0xFFFF;
 
         // Joypad
         public const ushort Joypad = 0xFF00;

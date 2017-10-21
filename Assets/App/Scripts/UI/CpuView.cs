@@ -18,6 +18,11 @@ namespace StudioKurage.Emulator.Gameboy
 
         Cpu cpu;
 
+        void OnEnable ()
+        {
+            Refresh ();
+        }
+
         public override void Setup (Mobo _)
         {
             base.Setup (_);

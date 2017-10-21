@@ -48,7 +48,7 @@ namespace StudioKurage.Emulator.Gameboy
                 maxCycles = (int)(cyclesPerSecond * Time.deltaTime * speed);
 
                 while (cycles < maxCycles) {
-                    cycles += mobo.Tick () * 4;
+                    cycles += mobo.Tick ();
 
                     if (mobo.gpu.frameRendered) {
                         UpdateFrame ();
@@ -81,8 +81,8 @@ namespace StudioKurage.Emulator.Gameboy
             byte[] frame = mobo.gpu.frame;
 
             for (int i = 0; i < frame.Length; i++) {
-                int x = i % Gpu.WindowWidth;
-                int y = Gpu.WindowHeight - (i / Gpu.WindowWidth) - 1;
+                int x = i % Gpu.FrameWidth;
+                int y = Gpu.FrameHeight - (i / Gpu.FrameWidth) - 1;
                 texture.SetPixel (x, y, colors [frame [i]]);
             }
 

@@ -32,14 +32,14 @@ namespace StudioKurage.Emulator.Gameboy
         //  [7-6]     [5-4]     [3-2]     [1-0]
         // color 3 - color 2 - color 1 - color 0
         //
-        public byte[] frame = new byte[WindowHeight * WindowWidth];
+        public byte[] frame = new byte[FrameHeight * FrameWidth];
         byte[] userPalette = new byte[4] { 0, 1,  2, 3 };
 
         const int ScreenWidth = 256;
         const int ScreenHeight = 256;
 
-        public const byte WindowWidth = 160;
-        public const byte WindowHeight = 144;
+        public const byte FrameWidth = 160;
+        public const byte FrameHeight = 144;
 
         const int ColorCount = 4;
         const int TilesPerRow = 32;
@@ -79,21 +79,8 @@ namespace StudioKurage.Emulator.Gameboy
         {
             UpdateBackgroundPalette ();
 
-            ushort backgroundTilemapAddress;
-
-            if (backgroundTilemapSelection) {
-                backgroundTilemapAddress = Address.BackgroundTilemapB;
-            } else {
-                backgroundTilemapAddress = Address.BackgroundTilemapA;
-            }
-
-            ushort backgroundTilesetAddress;
-
-            if (backgroundTilesetSelection) {
-                backgroundTilesetAddress = Address.TilesetA;
-            } else {
-                backgroundTilesetAddress = Address.TilesetB;
-            }
+            ushort backgroundTilemapAddress = backgroundTilemapSelection ? Address.BackgroundTilemapA : Address.BackgroundTilemapB;
+            ushort backgroundTilesetAddress = backgroundTilesetSelection ? Address.TilesetA : Address.TilesetB;
 
             byte tileX, tileY;
             ushort tileRow, tileColumn;
@@ -104,9 +91,9 @@ namespace StudioKurage.Emulator.Gameboy
             tileRow = (ushort)(((scy + ly) % ScreenHeight) / BitsPerByte);
             tileY = (byte)(((scy + ly) % ScreenHeight) % BitsPerByte);
 
-            int offset = ly * WindowWidth;
+            int offset = ly * FrameWidth;
 
-            for (int lx = 0; lx < WindowWidth; ++lx) {
+            for (int lx = 0; lx < FrameWidth; ++lx) {
                 tileColumn = (ushort)(((scx + lx) % ScreenWidth) / BitsPerByte);
                 tileX = (byte)(((scx + lx) % ScreenWidth) % BitsPerByte);
 
@@ -133,7 +120,7 @@ namespace StudioKurage.Emulator.Gameboy
         void RenderWindow ()
         {
             // check if the window is displayed
-            if (scy < 0 || scy >= WindowHeight || scx < -7 || scx >= WindowWidth) {
+            if (scy < 0 || scy >= FrameHeight || scx < -7 || scx >= FrameWidth) {
                 return;
             }
 
@@ -144,21 +131,8 @@ namespace StudioKurage.Emulator.Gameboy
 
             UpdateBackgroundPalette ();
 
-            ushort windowTilemapAddress;
-
-            if (windowTilemapSelection) {
-                windowTilemapAddress = Address.WindowTilemapB;
-            } else {
-                windowTilemapAddress = Address.WindowTilemapA;
-            }
-
-            ushort windowTilesetAddress;
-
-            if (backgroundTilesetSelection) {
-                windowTilesetAddress = Address.TilesetA;
-            } else {
-                windowTilesetAddress = Address.TilesetB;
-            }
+            ushort windowTilemapAddress = windowTilemapSelection ? Address.WindowTilemapA : Address.WindowTilemapB;
+            ushort windowTilesetAddress = backgroundTilesetSelection ? Address.TilesetA: Address.TilesetB;
 
             byte tileX, tileY;
             ushort tileRow, tileColumn;
@@ -169,9 +143,9 @@ namespace StudioKurage.Emulator.Gameboy
             tileRow = (ushort)((ly - scy) / BitsPerByte);
             tileY = (byte)((ly - scy) % BitsPerByte);
 
-            int offset = ly * WindowWidth;
+            int offset = ly * FrameWidth;
 
-            for (int lx = (scx < 0) ? 0 : scx; lx < WindowWidth; ++lx) {
+            for (int lx = (scx < 0) ? 0 : scx; lx < FrameWidth; ++lx) {
                 tileColumn = (ushort)((lx - scx) / BitsPerByte);
                 tileX = (byte)((lx - scx) % BitsPerByte);
 
@@ -197,7 +171,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         #endregion
 
-        #region Foreground
+        #region Objects
         // Object attributes are read from OAM
         // Used for drawing sprites or objects (OBJ)
         // There can be up to 40 OBJs
@@ -263,7 +237,7 @@ namespace StudioKurage.Emulator.Gameboy
                 var oa = ReadObjectAttributes (counter, width, height);
 
                 // out of screen
-                if (oa.x >= WindowWidth || oa.x <= -width || oa.y >= WindowHeight || oa.y <= -height) {
+                if (oa.x >= FrameWidth || oa.x <= -width || oa.y >= FrameHeight || oa.y <= -height) {
                     continue;
                 }
 
@@ -304,12 +278,12 @@ namespace StudioKurage.Emulator.Gameboy
                     tileAddress = (ushort)(Address.TilesetA + BitsPerAddress * oa.characterCode);
                 }
 
-                int offset = ly * WindowWidth;
+                int offset = ly * FrameWidth;
 
                 // render the line...
                 for (int x = 0; x < width; ++x) {
                     // skip if out of window
-                    if (oa.x + x < 0 || oa.x + x >= WindowWidth) {
+                    if (oa.x + x < 0 || oa.x + x >= FrameWidth) {
                         continue;
                     }
 

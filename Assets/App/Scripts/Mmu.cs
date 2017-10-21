@@ -92,10 +92,13 @@ namespace StudioKurage.Emulator.Gameboy
 
         public bool biosActive;
 
-        // Memory Bank Controller
+        // cartridge data
+        public byte[] cartridge;
+
+        // memory bank controller
         protected Mbc mbc;
 
-        // Rom Bank Length
+        // rom bank length
         const int RomBankLength = 0x4000;
 
         public bool lcd {
@@ -160,6 +163,8 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void LoadRom (byte[] rom)
         {
+            cartridge = rom;
+
             byte cartridgeType = rom [Address.CartridgeType];
             byte romSize = rom [Address.RomSize];
             byte ramSize = rom [Address.RamSize];
@@ -293,8 +298,8 @@ namespace StudioKurage.Emulator.Gameboy
                 //apu.wb(address, value);
                 return;
             }
-            if (address <= Address.RomBank_M) {
-                mbc.wb (address, value);
+            if ((address >= Address.RomBank_L) && (address <= Address.RomBank_M)) {
+                mbc.wb ((ushort)(address - Address.RomBank_L), value);
                 return;
             }
             if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
@@ -415,14 +420,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         #region Direct Memory Access
 
-        public void Dma (ushort dest, ushort src, ushort n)
-        {
-            for (; n > 0; n--) {
-                wb (dest++, rb (src++));
-            }
-        }
-
-        void TransfertDma (byte value)
+        public void TransfertDma (byte value)
         {
             // address is value * 100
             ushort address = (ushort)(value << 8);
@@ -431,6 +429,13 @@ namespace StudioKurage.Emulator.Gameboy
                 oam [i] = rb (address + i);
             }
         }
+
+//        public void TransferDma (ushort dst, ushort src, ushort n)
+//        {
+//            for (; n > 0; n--) {
+//                wb (dst++, rb (src++));
+//            }
+//        }
 
         #endregion
 
