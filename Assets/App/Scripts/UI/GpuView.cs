@@ -18,7 +18,7 @@ namespace StudioKurage.Emulator.Gameboy
             Refresh ();
         }
 
-        void Refresh ()
+        public void Refresh ()
         {
             var gpu = mobo.gpu;
             lcdc [0].SetActive (gpu.backgroundEnabled);
