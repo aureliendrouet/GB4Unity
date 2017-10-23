@@ -38,19 +38,19 @@ namespace StudioKurage.Emulator.Gameboy
         public byte ie;
 
         // FF80-FFFE - zero page
-        protected byte[] zram = new byte[127];
+        public byte[] zram = new byte[127];
 
         // FF0F - interrupt request register
         public byte ir;
 
         // FEA0-FF7F - Memory-mapped I/O
-        protected byte[] mmio = new byte[224];
+        public byte[] mmio = new byte[224];
 
         // FEA0-FEFF & FF4C-FF7F - unusable
         // skip
 
         // FE00-FE9F - Object Attribute Memory (for sprites)
-        protected byte[] oam = new byte[160];
+        public byte[] oam = new byte[160];
 
         // E000-FDFF - working ram (shadown)
         // skip

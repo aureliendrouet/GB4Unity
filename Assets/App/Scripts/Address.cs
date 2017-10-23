@@ -161,8 +161,8 @@ namespace StudioKurage.Emulator.Gameboy
         public const ushort InterruptRequest                        = 0xFF0F;
         public const ushort InterruptEnable                         = 0xFFFF;
 
-        // Joypad
-        public const ushort Joypad = 0xFF00;
+        // Keypad
+        public const ushort Keypad = 0xFF00;
 
         // Serial
         public const ushort SerialShift = 0xFF01;

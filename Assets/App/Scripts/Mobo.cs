@@ -11,6 +11,7 @@ namespace StudioKurage.Emulator.Gameboy
         public Gpu gpu;
         public Apu apu;
         public Timer timer;
+        public Keypad keypad;
 
         public Mobo ()
         {
@@ -19,6 +20,7 @@ namespace StudioKurage.Emulator.Gameboy
             gpu = new Gpu (mmu);
             apu = new Apu (mmu);
             timer = new Timer (mmu);
+            keypad = new Keypad (mmu);
         }
 
         public void Reset ()
