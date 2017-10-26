@@ -6,59 +6,57 @@ namespace StudioKurage.Emulator.Gameboy
 {
     public class Keypad
     {
-        Mmu mmu;
+        internal Mmu mmu;
 
-        ushort address = (ushort)(Address.Keypad - Address.Mmio_L);
+        internal static readonly byte[] Keys = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
 
-        public class Key
+        internal byte keys;
+        internal bool joypadEnabled;
+        internal bool buttonEnabled;
+
+        internal static class KeypadFlag
         {
-            public byte value;
-            public byte mask;
-
-            public Key (byte row, byte column)
-            {
-                this.value = (byte)(1 << row + 1 << column);
-                this.mask = (byte)(~this.value);
-            }
+            internal static byte Button = 0x10;
+            internal static byte Joypad = 0x20;
         }
 
-        public static readonly Key Right = new Key (4, 0);
-        public static readonly Key Left = new Key (4, 1);
-        public static readonly Key Up = new Key (4, 2);
-        public static readonly Key Down = new Key (4, 3);
-        public static readonly Key A = new Key (5, 0);
-        public static readonly Key B = new Key (5, 1);
-        public static readonly Key Select = new Key (5, 2);
-        public static readonly Key Start = new Key (5, 3);
-
-        public static readonly Key[] Keys = new Key[] {
-            Right, Left, Up, Down, A, B, Select, Start
-        };
+        internal byte data;
 
         public Keypad (Mmu mmu)
         {
             this.mmu = mmu;
         }
 
-        public void Press (int index)
+        public void Reset ()
         {
-            Press (Keys [index]);
+            keys = 0x00;
         }
 
-        public void Press (Key key)
+        public byte memory {
+            get {
+                if (buttonEnabled) {
+                    return (byte)(0xE0 | (~keys & 0x0F));
+                }
+                if (joypadEnabled) {
+                    return (byte)(0xD0 | (~(keys >> 4) & 0x0F));
+                }
+                return 0xFE;
+            }
+            set {
+                buttonEnabled = (value & KeypadFlag.Button) == KeypadFlag.Button;
+                joypadEnabled = (value & KeypadFlag.Joypad) == KeypadFlag.Joypad;
+            }
+        }
+
+        public void Press (int index)
         {
-            mmu.mmio [address] &= key.mask;
+            keys = (byte)(keys | Keys [index]);
             mmu.RequestInterrupt (InterruptFlag.Joypad);
         }
 
         public void Release (int index)
         {
-            Release (Keys [index]);
-        }
-
-        public void Release (Key key)
-        {
-            mmu.mmio [address] |= key.value;
+            keys = (byte)(keys & ~Keys [index]);
         }
     }
 }

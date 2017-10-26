@@ -26,7 +26,7 @@ namespace StudioKurage.Emulator.Gameboy
         //
         // background 256 x 256 pixels
         // 32 tiles x 32 tiles
-        // scolling coordinates (wx, wy)
+        // scolling coordinates (scx, scy)
         //
         // palette 4 colors x 2 bits = 8 bits or 1 bytes
         //  [7-6]     [5-4]     [3-2]     [1-0]
@@ -82,20 +82,22 @@ namespace StudioKurage.Emulator.Gameboy
             ushort backgroundTilemapAddress = backgroundTilemapSelection ? Address.BackgroundTilemapA : Address.BackgroundTilemapB;
             ushort backgroundTilesetAddress = backgroundTilesetSelection ? Address.TilesetA : Address.TilesetB;
 
+            short scX = (short)scx;
+            short scY = (short)scy;
             byte tileX, tileY;
             ushort tileRow, tileColumn;
             ushort tileIndexAddress, tileAddress;
             int tileIndex;
             byte colorIndex;
 
-            tileRow = (ushort)(((scy + ly) % ScreenHeight) / BitsPerByte);
-            tileY = (byte)(((scy + ly) % ScreenHeight) % BitsPerByte);
+            tileRow = (ushort)(((scY + ly) % ScreenHeight) / BitsPerByte);
+            tileY = (byte)(((scY + ly) % ScreenHeight) % BitsPerByte);
 
             int offset = ly * FrameWidth;
 
             for (int lx = 0; lx < FrameWidth; ++lx) {
-                tileColumn = (ushort)(((scx + lx) % ScreenWidth) / BitsPerByte);
-                tileX = (byte)(((scx + lx) % ScreenWidth) % BitsPerByte);
+                tileColumn = (ushort)(((scX + lx) % ScreenWidth) / BitsPerByte);
+                tileX = (byte)(((scX + lx) % ScreenWidth) % BitsPerByte);
 
                 // find tile index
                 tileIndexAddress = (ushort)(backgroundTilemapAddress + tileRow * TilesPerRow + tileColumn);
@@ -119,13 +121,11 @@ namespace StudioKurage.Emulator.Gameboy
 
         void RenderWindow ()
         {
-            // check if the window is displayed
-            if (scy < 0 || scy >= FrameHeight || scx < -7 || scx >= FrameWidth) {
-                return;
-            }
+            short wX = (short)(wx - 7);
+            short wY = (short)wy;
 
             // check if the window is on the current ly
-            if (scy > (short)(ly)) {
+            if (wY > ly) {
                 return;
             }
 
@@ -140,14 +140,14 @@ namespace StudioKurage.Emulator.Gameboy
             int tileIndex;
             byte colorIndex;
 
-            tileRow = (ushort)((ly - scy) / BitsPerByte);
-            tileY = (byte)((ly - scy) % BitsPerByte);
+            tileRow = (ushort)((ly - wY) / BitsPerByte);
+            tileY = (byte)((ly - wY) % BitsPerByte);
 
             int offset = ly * FrameWidth;
 
-            for (int lx = (scx < 0) ? 0 : scx; lx < FrameWidth; ++lx) {
-                tileColumn = (ushort)((lx - scx) / BitsPerByte);
-                tileX = (byte)((lx - scx) % BitsPerByte);
+            for (int lx = (wX < 0) ? 0 : wX; lx < FrameWidth; ++lx) {
+                tileColumn = (ushort)((lx - wX) / BitsPerByte);
+                tileX = (byte)((lx - wX) % BitsPerByte);
 
                 // find tile index
                 tileIndexAddress = (ushort)(windowTilemapAddress + tileRow * TilesPerRow + tileColumn);

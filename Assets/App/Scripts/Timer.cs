@@ -11,16 +11,16 @@ namespace StudioKurage.Emulator.Gameboy
         // divider timer is permanently set to increment at 16384 Hz
         // 1/16th of the timer base speed
         // go back to zero after the overflow
-        byte divider;
+        internal byte divider;
 
         // counter" timer is programmable
         // it can be set to one of four speeds (the base divided by 1, 4, 16 or 64
         // go back to modulator value after the overflow
         // send an interrupt when it overflows
-        byte counter;
+        internal byte counter;
 
         // timer modulator
-        byte modulator;
+        internal byte modulator;
 
         // timer controller
         // --XX speed
@@ -36,7 +36,7 @@ namespace StudioKurage.Emulator.Gameboy
         // 4194304 Hz / 262144 Hz / 16 (base) = 1
         // 4194304 Hz /  65536 Hz / 16 (base) = 4
         // 4194304 Hz /  16384 Hz / 16 (base) = 16
-        byte controller;
+        internal byte controller;
 
         public static byte TimerControllerEnabledFlag = 0x04;
 
@@ -77,8 +77,6 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Tick (long cc)
         {
-            LoadMemory ();
-
             // m-clock increments at 1/4 the m-clock rate
             tc += cc;
 
@@ -113,22 +111,6 @@ namespace StudioKurage.Emulator.Gameboy
                     }
                 }
             }
-
-            WriteMemory ();
-        }
-
-        void LoadMemory ()
-        {
-            divider = mmu.rb (Address.TimerDivider);
-            counter = mmu.rb (Address.TimerCounter);
-            modulator = mmu.rb (Address.TimerModulator);
-            controller = mmu.rb (Address.TimerController);
-        }
-
-        void WriteMemory ()
-        {
-            mmu.wb (Address.TimerDivider, divider);
-            mmu.wb (Address.TimerCounter, counter);
         }
     }
 }

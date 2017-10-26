@@ -44,7 +44,7 @@ namespace StudioKurage.Emulator.Gameboy
         // LCD Controler Operation Stop Flag
         // 0: LCDC Off
         // 1: LCDC On
-        byte lcdc;
+        internal byte lcdc;
 
         static class LcdcFlag
         {
@@ -122,7 +122,7 @@ namespace StudioKurage.Emulator.Gameboy
         // 000X 0000 V-Blank Interrupt
         // 00X0 0000 OAM Interrupt
         // 0X00 0000 LYC = LY Interupt
-        byte stat;
+        internal byte stat;
 
         public enum LcdMode : byte
         {
@@ -180,25 +180,25 @@ namespace StudioKurage.Emulator.Gameboy
 
         // scroll y
         // the y position of the background where to start drawing the viewing area from 
-        public short scy;
+        internal byte scy;
 
         // scroll x
         // the x position of the background to start drawing the viewing area from
-        public short scx;
+        internal byte scx;
 
         // line
-        public byte ly;
+        internal byte ly;
 
         // line control
-        public byte lyc;
+        internal byte lyc;
 
         // window y
         // the y Position of the viewing area to start drawing the window from
-        public short wy;
+        internal byte wy;
 
         // window x
         // the x Position of the viewing area to start drawing the window from
-        public short wx;
+        internal byte wx;
 
         #region Register Utility
 

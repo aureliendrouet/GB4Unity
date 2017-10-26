@@ -21,15 +21,19 @@ namespace StudioKurage.Emulator.Gameboy
             apu = new Apu (mmu);
             timer = new Timer (mmu);
             keypad = new Keypad (mmu);
+
+            mmu.SetComponents (gpu, timer, keypad);
+            Reset ();
         }
 
         public void Reset ()
         {
-            cpu.Reset ();
             mmu.Reset ();
+            cpu.Reset ();
             apu.Reset ();
             gpu.Reset ();
             timer.Reset ();
+            keypad.Reset ();
         }
 
         public void LoadRom (byte[] rom)

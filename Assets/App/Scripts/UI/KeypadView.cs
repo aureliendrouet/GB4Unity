@@ -9,23 +9,32 @@ namespace StudioKurage.Emulator.Gameboy
     {
         [SerializeField] Color pressedColor;
         [SerializeField] Color releasedColor;
-
+        [SerializeField] Text keysText;
+        [SerializeField] Text memoryText;
         [SerializeField] Image[] buttons;
 
         KeyCode[] keys = new KeyCode[] {
-            KeyCode.D, KeyCode.A, KeyCode.W, KeyCode.S, KeyCode.L, KeyCode.Semicolon, KeyCode.J, KeyCode.K
+            KeyCode.L, KeyCode.Semicolon, KeyCode.J, KeyCode.K, KeyCode.D, KeyCode.A, KeyCode.W, KeyCode.S
         };
 
         public void Press (int index)
         {
             buttons [index].color = pressedColor;
             mobo.keypad.Press (index);
+            Refresh ();
         }
 
         public void Release (int index)
         {
             buttons [index].color = releasedColor;
             mobo.keypad.Release (index);
+            Refresh ();
+        }
+
+        void Refresh ()
+        {
+            keysText.text = Convert.ToString (mobo.keypad.keys, 2).PadLeft(8, '0');
+            memoryText.text = Convert.ToString (mobo.keypad.memory, 2).PadLeft(8, '0');
         }
 
         void Update ()

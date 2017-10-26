@@ -30,12 +30,16 @@ namespace StudioKurage.Emulator.Gameboy
             enabled = true;
             frameRendered = false;
             lineRendered = false;
+            lcdc = 0x91;
+            scy = 0x00;
+            scx = 0x00;
+            lyc = 0x00;
+            wx = 0x00;
+            wy = 0x00;
         }
 
         public void Tick (long lcc, bool ime)
         {
-            LoadMemory ();
-
             frameRendered = false;
 
             if (!lcdEnabled) {
@@ -77,27 +81,6 @@ namespace StudioKurage.Emulator.Gameboy
 //            } else {
 //                TickDisabled (lmc);
 //            }
-
-            WriteMemory ();
-        }
-
-        void LoadMemory ()
-        {
-            lcdc = mmu.rb (Address.Lcdc);
-            stat = mmu.rb (Address.Stat);
-            scy = (short)mmu.rb (Address.Scy);
-            scx = (short)mmu.rb (Address.Scx);
-            ly = mmu.rb (Address.Ly);
-            lyc = mmu.rb (Address.Lyc);
-            wy = (short)mmu.rb (Address.Wy);
-            wx = (short)mmu.rb (Address.Wx);
-        }
-
-        void WriteMemory ()
-        {
-            mmu.wb (Address.Stat, stat);
-            mmu.wb (Address.Ly, ly);
-            mmu.wb (Address.Lyc, lyc);
         }
 
         void TickOam ()

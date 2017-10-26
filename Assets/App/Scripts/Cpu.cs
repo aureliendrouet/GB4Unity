@@ -17,12 +17,21 @@ namespace StudioKurage.Emulator.Gameboy
         public void Reset ()
         {
             // registers
-            af = 0x01B0;
-            bc = 0x0013;
-            de = 0x00D8;
-            hl = 0x014D;
-            pc = (ushort)(mmu.biosActive ? 0x0000 : 0x0100);
-            sp = 0xFFFE;
+            if (mmu.biosActive) {
+                af = 0x0000;
+                bc = 0x0000;
+                de = 0x0000;
+                hl = 0x0000;
+                pc = 0x0000;
+                sp = 0x0000;
+            } else {
+                af = 0x01B0;
+                bc = 0x0013;
+                de = 0x00D8;
+                hl = 0x014D;
+                pc = 0x0100;
+                sp = 0xFFFE;
+            }
             // clocks
             mc = 0;
             lmc = 0;

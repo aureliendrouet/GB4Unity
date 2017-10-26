@@ -107,9 +107,15 @@ namespace StudioKurage.Emulator.Gameboy
             }
         }
 
-        public Mmu ()
+        Gpu gpu;
+        Keypad keypad;
+        Timer timer;
+
+        public void SetComponents (Gpu gpu, Timer timer, Keypad keypad)
         {
-            Reset ();
+            this.gpu    = gpu;
+            this.timer  = timer;
+            this.keypad = keypad;
         }
 
         public void Reset ()
@@ -125,10 +131,7 @@ namespace StudioKurage.Emulator.Gameboy
             Array.Clear (wram, 0, wram.Length);
             Array.Clear (vram, 0, vram.Length);
 
-            wbr (0xFFFF, (byte)0x00);
-            wbr (Address.TimerCounter, 0x00);
-            wbr (Address.TimerModulator, 0x00);
-            wbr (Address.TimerController, 0x00);
+            wbr (0xFFFF, 0x00);
             wbr (Address.NR10, 0x80);
             wbr (Address.NR11, 0xBF);
             wbr (Address.NR12, 0xF3);
@@ -147,16 +150,10 @@ namespace StudioKurage.Emulator.Gameboy
             wbr (Address.NR50, 0x77);
             wbr (Address.NR51, 0xF3);
             wbr (Address.NR52, 0xF1);
-            wbr (Address.Lcdc, 0x91);
-            wbr (Address.Scy, 0x00);
-            wbr (Address.Scx, 0x00);
-            wbr (Address.Lyc, 0x00);
             wbr (Address.Bgp, 0xFC);
             wbr (Address.Obp0, 0xFF);
             wbr (Address.Obp1, 0xFF);
-            wbr (Address.Wx, 0x00);
-            wbr (Address.Wy, 0x00);
-            wbr (Address.InterruptEnable, 0x00);
+            ie = 0x00;
 
             mbc = null;
         }
@@ -278,12 +275,47 @@ namespace StudioKurage.Emulator.Gameboy
             if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
                 return mbc.rrb ((ushort)(address - Address.RamBank_L));
             }
-            if (address == Address.InterruptRequest) {
+
+            switch (address) {
+            // gpu
+            case Address.Lcdc:
+                return gpu.lcdc;
+            case Address.Stat:
+                return gpu.stat;
+            case Address.Scy:
+                return gpu.scy;
+            case Address.Scx:
+                return gpu.scx;
+            case Address.Ly:
+                return gpu.ly;
+            case Address.Lyc:
+                return gpu.lyc;
+            case Address.Wy:
+                return gpu.wy;
+            case Address.Wx:
+                return gpu.wx;
+
+                // keypad
+            case Address.Keypad:
+                return keypad.memory;
+
+                // interrupt
+            case Address.InterruptRequest:
                 return ir;
-            }
-            if (address == Address.InterruptEnable) {
+            case Address.InterruptEnable:
                 return ie;
+
+                // timer
+            case Address.TimerCounter:
+                return timer.counter;
+            case Address.TimerDivider:
+                return timer.divider;
+            case Address.TimerController:
+                return timer.controller;
+            case Address.TimerModulator:
+                return timer.modulator;
             }
+
             byte[] memory;
             ushort resolvedAddress;
             ResolveMemoryAddress (address, out memory, out resolvedAddress);
@@ -294,6 +326,65 @@ namespace StudioKurage.Emulator.Gameboy
         // write byte
         public void wb (ushort address, byte value)
         {
+            switch (address) {
+            case Address.Lcdc:
+                gpu.lcdc = value;
+                return;
+            case Address.Stat:
+                gpu.stat = value;
+                return;
+            case Address.Scy:
+                gpu.scy = value;
+                return;
+            case Address.Scx:
+                gpu.scx = value;
+                return;
+            case Address.Ly:
+                gpu.ly = value;
+                return;
+            case Address.Lyc:
+                gpu.lyc = value;
+                return;
+            case Address.Wy:
+                gpu.wy = value;
+                return;
+            case Address.Wx:
+                gpu.wx = value;
+                return;
+
+                // keypad
+            case Address.Keypad:
+                keypad.memory = value;
+                return;
+
+                // timer
+            case Address.TimerCounter:
+                timer.counter = value;
+                return;
+            case Address.TimerDivider:
+                TrapDividerRegister ();
+                return;
+            case Address.TimerController:
+                timer.controller = value;
+                return;
+            case Address.TimerModulator:
+                timer.modulator = value;
+                return;
+
+                // interrupt
+            case Address.InterruptRequest:
+                ir = value;
+                return;
+            case Address.InterruptEnable:
+                ie = value;
+                return;
+
+                // dma
+            case Address.Dma:
+                TransfertDma (value);
+                return;
+            }
+
             if (address >= Address.Apu_L && address <= Address.Apu_M) {
                 //apu.wb(address, value);
                 return;
@@ -304,22 +395,6 @@ namespace StudioKurage.Emulator.Gameboy
             }
             if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
                 mbc.rwb ((ushort)(address - Address.RamBank_L), value);
-                return;
-            }
-            if (address == Address.Dma) {
-                TransfertDma (value);
-                return;
-            }
-            if (address == Address.TimerDivider) {
-                TrapDividerRegister ();
-                return;
-            }
-            if (address == Address.InterruptRequest) {
-                ir = value;
-                return;
-            }
-            if (address == Address.InterruptEnable) {
-                ie = value;
                 return;
             }
 
