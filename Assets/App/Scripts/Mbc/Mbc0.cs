@@ -9,12 +9,7 @@ namespace StudioKurage.Emulator.Gameboy
             this.romBankIndex = 1;
         }
 
-        public override byte rb (ushort address)
-        {
-            return romBank [address];
-        }
-
-        public override void wb (ushort address, byte value)
+        public override void wb (int address, byte value)
         {
             romBank [address] = value;
         }

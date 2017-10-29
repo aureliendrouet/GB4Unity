@@ -68,10 +68,8 @@ namespace StudioKurage.Emulator.Gameboy
 
         void UpdateBackgroundPalette ()
         {
-            byte palette = mmu.rb (Address.Bgp);
-
             for (int i = 0; i < ColorCount; ++i) {
-                backgroundPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
+                backgroundPalette [i] = userPalette [(bgp >> (i * 2)) & 0x3];
             }
         }
 
@@ -212,8 +210,8 @@ namespace StudioKurage.Emulator.Gameboy
 
             ushort index = (ushort)(Address.Oam_L + ObjectDataSize * counter);
 
-            oa.y = (short)(mmu.rb (index + 0x00) - height);
-            oa.x = (short)(mmu.rb (index + 0x01) - width);
+            oa.y = (short)(mmu.rb (index + 0x00) - 0x10);
+            oa.x = (short)(mmu.rb (index + 0x01) - 0x8);
 
             oa.characterCode = mmu.rb (index + 0x02);
 
@@ -244,16 +242,16 @@ namespace StudioKurage.Emulator.Gameboy
                 byte tileY = (byte)(ly - oa.y);
 
                 // not on current line
-                if (oa.y > (short)ly || tileY >= width) {
+                if (oa.y > (short)ly || tileY >= height) {
                     continue;
                 }
 
                 // update palette
-//                byte palette = mmu.rb (oa.paletteSelection ? Address.ObjectTilemapA : Address.ObjectTilemapB);
-//
-//                for (int i = 0; i < 4; ++i) {
-//                    objectPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
-//                }
+                byte palette = oa.paletteSelection ? obp1 : obp0;
+
+                for (int i = 0; i < 4; ++i) {
+                    objectPalette [i] = userPalette [(palette >> (i * 2)) & 0x3];
+                }
 
                 // find tile address
                 ushort tileAddress;

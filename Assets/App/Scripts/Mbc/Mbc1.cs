@@ -10,11 +10,7 @@ namespace StudioKurage.Emulator.Gameboy
         {
         }
 
-        //        public Mbc1(byte[][]romBanks, byte[][]ramBanks = null, bool battery) : base(romBanks, ramBanks, battery)
-        //        {
-        //        }
-
-        public override void wb (ushort address, byte value)
+        public override void wb (int address, byte value)
         {
             if (value == 0) {
                 romBankIndex = 0;

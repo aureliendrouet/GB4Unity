@@ -8,19 +8,16 @@ namespace StudioKurage.Emulator.Gameboy
     {
         internal Mmu mmu;
 
-        internal static readonly byte[] Keys = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+        internal byte memory;
 
-        internal byte keys;
-        internal bool joypadEnabled;
-        internal bool buttonEnabled;
+        internal bool[] buttonKeys;
+        internal bool[] joypadKeys;
 
         internal static class KeypadFlag
         {
-            internal static byte Button = 0x10;
-            internal static byte Joypad = 0x20;
+            internal static byte Joypad = 0x10;
+            internal static byte Button = 0x20;
         }
-
-        internal byte data;
 
         public Keypad (Mmu mmu)
         {
@@ -29,34 +26,119 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Reset ()
         {
-            keys = 0x00;
+            buttonKeys = new bool[4];
+            joypadKeys = new bool[4];
         }
 
-        public byte memory {
-            get {
-                if (buttonEnabled) {
-                    return (byte)(0xE0 | (~keys & 0x0F));
-                }
-                if (joypadEnabled) {
-                    return (byte)(0xD0 | (~(keys >> 4) & 0x0F));
-                }
-                return 0xFE;
-            }
-            set {
-                buttonEnabled = (value & KeypadFlag.Button) == KeypadFlag.Button;
-                joypadEnabled = (value & KeypadFlag.Joypad) == KeypadFlag.Joypad;
-            }
-        }
-
-        public void Press (int index)
+        public void Tick()
         {
-            keys = (byte)(keys | Keys [index]);
-            mmu.RequestInterrupt (InterruptFlag.Joypad);
-        }
+            byte flag;
+            if ((memory & KeypadFlag.Button) == 0) {
+                for (int i = 0; i < 4; i++) {
+                    flag = (byte)(1 << i);
 
-        public void Release (int index)
-        {
-            keys = (byte)(keys & ~Keys [index]);
+                    if (buttonKeys [i]) {
+                        // pressed
+                        if ((memory & flag) == flag) {
+                            mmu.RequestInterrupt (InterruptFlag.Joypad);
+                        }
+                        memory &= (byte)~flag;
+                    } else {
+                        // released
+                        memory |= flag;
+                    }
+                }
+            } else if ((memory & KeypadFlag.Joypad) == 0) {
+                for (int i = 0; i < 4; i++) {
+                    flag = (byte)(1 << i);
+
+                    if (joypadKeys [i]) {
+                        // pressed
+                        if ((memory & flag) == flag) {
+                            mmu.RequestInterrupt (InterruptFlag.Joypad);
+                        }
+                        memory &= (byte)~flag;
+                    } else {
+                        // released
+                        memory |= flag;
+                    }
+                }
+            }
         }
+            
+            public void PressJoypad (int index)
+            {
+                joypadKeys [index] = true;
+            }
+
+            public void ReleaseJoypad (int index)
+            {
+                joypadKeys [index] = false;
+            }
+
+            public void PressButton (int index)
+            {
+                buttonKeys [index] = true;
+            }
+
+            public void ReleaseButton (int index)
+            {
+                buttonKeys [index] = false;
+            }
+
+//        internal bool joypadEnabled;
+//        internal bool buttonEnabled;
+
+//        public byte memory {
+//            get {
+////                byte res = (byte)(data ^ 0xFF);
+//
+////                if ((res & KeypadFlag.Button) == 0) {
+//                if (buttonEnabled) {
+////                    return (byte)(res & (~keys & 0x0F));
+//                    return (byte)(0xE0 | (~keys & 0x0F));
+//                }
+////                if ((res & KeypadFlag.Joypad) == 0) {
+//                if (joypadEnabled) {
+//                    return (byte)(0xD0 | ((~keys >> 4) & 0x0F));
+////                    return (byte)(res & ((~keys >> 4) & 0x0F));
+//                }
+//                return 0xFF;
+//            }
+//            set {
+//                Debug.Log ("WRITE " + System.Convert.ToString (value, 2).PadLeft(8, '0'));
+//                buttonEnabled = (value & KeypadFlag.Button) == 0;
+//                joypadEnabled = (value & KeypadFlag.Joypad) == 0;
+//            }
+                    //        }
+
+//
+//        public void PressJoypad (int index)
+//        {
+//            joypadKeys [index] = true;
+////            byte flag = (byte)(1 << index);
+////
+////            bool alreadyPressed = (keys & flag) == flag;
+////
+////            keys = (byte)(keys | flag);
+////
+////            if (alreadyPressed) {
+////                return;
+////            }
+////
+////            bool buttonPressed = index < 4;
+////
+////            if ((buttonPressed && buttonEnabled) || (!buttonPressed && joypadEnabled)) {
+////                mmu.RequestInterrupt (InterruptFlag.Joypad);
+////                Debug.Log ("INTERRUPT OF BUTTON ? " + buttonEnabled + " JOYPAD ? " + joypadEnabled);
+////            }
+//        }
+//
+//        public void ReleaseJoypad (int index)
+//        {
+//            joypadKeys [index] = false;
+////            byte flag = (byte)(1 << index);
+////            keys = (byte)(keys & ~flag);
+//        }
     }
 }

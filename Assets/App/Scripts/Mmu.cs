@@ -118,9 +118,9 @@ namespace StudioKurage.Emulator.Gameboy
             this.keypad = keypad;
         }
 
-        public void Reset ()
+        public void Reset (bool bios)
         {
-            biosActive = true;
+            biosActive = bios;
 
             ie = 0;
             ir = 0;
@@ -130,6 +130,12 @@ namespace StudioKurage.Emulator.Gameboy
             Array.Clear (oam, 0, oam.Length);
             Array.Clear (wram, 0, wram.Length);
             Array.Clear (vram, 0, vram.Length);
+
+            mbc = null;
+
+            if (biosActive) {
+                return;
+            }
 
             wbr (0xFFFF, 0x00);
             wbr (Address.NR10, 0x80);
@@ -153,9 +159,6 @@ namespace StudioKurage.Emulator.Gameboy
             wbr (Address.Bgp, 0xFC);
             wbr (Address.Obp0, 0xFF);
             wbr (Address.Obp1, 0xFF);
-            ie = 0x00;
-
-            mbc = null;
         }
 
         public void LoadRom (byte[] rom)
@@ -268,16 +271,130 @@ namespace StudioKurage.Emulator.Gameboy
             if (biosActive && address < Address.Bios_M) {
                 return Bios [address];
             }
-            if (address >= Address.Apu_L && address <= Address.Apu_M) {
-//                return audio.rr(address);
-                return 0;
-            }
-            if ((address >= Address.RamBank_L) && (address <= Address.RamBank_M)) {
-                return mbc.rrb ((ushort)(address - Address.RamBank_L));
-            }
+
+//            switch(address & 0xF000) {
+//            case 0x0000:
+//            case 0x1000:
+//            case 0x2000:
+//            case 0x3000:
+//                // rom bank 0
+//                return mbc.rom[address];
+//
+//            case 0x4000:
+//            case 0x5000:
+//            case 0x6000:
+//            case 0x7000:
+//                // rom banks 1 and higher
+//                return mbc.romBank[address - 0x4000];
+//
+//            case 0x8000:
+//            case 0x9000:
+//                // working ram
+//                return vram [address - 0x8000];
+//
+//            case 0xA000:
+//            case 0xB000:
+//                // ram bank
+//                return mbc.rrb (address);
+//
+//            case 0xC000:
+//            case 0xD000:
+//                // working ram
+//                return wram[address - 0xC000];
+//            case 0xE000:
+//                // remaining echo ram
+//                return wram[address - 0xE000];
+//
+//            case 0xF000:
+//                switch (address & 0x0F00) {
+//                case 0x000:
+//                case 0x100:
+//                case 0x200:
+//                case 0x300:
+//                case 0x400:
+//                case 0x500:
+//                case 0x600:
+//                case 0x700:
+//                case 0x800:
+//                case 0x900:
+//                case 0xA00:
+//                case 0xB00:
+//                case 0xC00:
+//                case 0xD00:
+//                    // remaining echo ram
+//                    return wram [address - 0xF000];
+//
+//                case 0xE00:
+//                    if (address >= Address.Oam_L && address <= Address.Oam_M) {
+//                        // oam
+//                        return oam [address - Address.Oam_L];
+//                    } else {
+//                        // outside range of oam (empty)
+//                        return 0x00;
+//                    }
+//
+//                case 0xF00:
+//                    // Zero-page RAM, Memory-mapped I/O, including sound, graphics, etc
+//                    switch (address) {
+//                    // gpu
+//                    case Address.Lcdc:
+//                        return gpu.lcdc;
+//                    case Address.Stat:
+//                        return gpu.stat;
+//                    case Address.Scy:
+//                        return gpu.scy;
+//                    case Address.Scx:
+//                        return gpu.scx;
+//                    case Address.Ly:
+//                        return gpu.ly;
+//                    case Address.Lyc:
+//                        return gpu.lyc;
+//                    case Address.Wy:
+//                        return gpu.wy;
+//                    case Address.Wx:
+//                        return gpu.wx;
+//                    case Address.Bgp:
+//                        return gpu.bgp;
+//                    case Address.Obp0:
+//                        return gpu.obp0;
+//                    case Address.Obp1:
+//                        return gpu.obp1;
+//
+//                    // keypad
+//                    case Address.Keypad:
+////                        UnityEngine.Debug.LogFormat ("R {0}", Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
+//                        return keypad.memory;
+//
+//                    // interrupt
+//                    case Address.InterruptRequest:
+//                        return ir;
+//                    case Address.InterruptEnable:
+//                        return ie;
+//
+//                    // timer
+//                    case Address.TimerCounter:
+//                        return timer.counter;
+//                    case Address.TimerDivider:
+//                        return timer.divider;
+//                    case Address.TimerController:
+//                        return timer.controller;
+//                    case Address.TimerModulator:
+//                        return timer.modulator;
+//
+//                    default:
+//                        if (address >= 0xFF80 && address <= 0xFFFE) {
+//                            return zram [address - 0xFF80];
+//                        }
+//                        break;
+//                    }
+//                    break;
+//                }
+//                break;
+//            }
+//            UnityEngine.Debug.Log ("SHOULD NOT BE HERE " + Convert.ToString(address, 16));
 
             switch (address) {
-            // gpu
+                // gpu
             case Address.Lcdc:
                 return gpu.lcdc;
             case Address.Stat:
@@ -294,9 +411,16 @@ namespace StudioKurage.Emulator.Gameboy
                 return gpu.wy;
             case Address.Wx:
                 return gpu.wx;
+            case Address.Bgp:
+                return gpu.bgp;
+            case Address.Obp0:
+                return gpu.obp0;
+            case Address.Obp1:
+                return gpu.obp1;
 
                 // keypad
             case Address.Keypad:
+                // UnityEngine.Debug.LogFormat ("R {0}", Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
                 return keypad.memory;
 
                 // interrupt
@@ -314,6 +438,10 @@ namespace StudioKurage.Emulator.Gameboy
                 return timer.controller;
             case Address.TimerModulator:
                 return timer.modulator;
+            }
+
+            if (address >= Address.RamBank_L && address <= Address.RamBank_M) {
+                return mbc.rrb (address - Address.RamBank_L);
             }
 
             byte[] memory;
@@ -351,10 +479,21 @@ namespace StudioKurage.Emulator.Gameboy
             case Address.Wx:
                 gpu.wx = value;
                 return;
+            case Address.Bgp:
+                gpu.bgp = value;
+                return;
+            case Address.Obp0:
+                gpu.obp0 = value;
+                return;
+            case Address.Obp1:
+                gpu.obp1 = value;
+                return;
 
                 // keypad
             case Address.Keypad:
-                keypad.memory = value;
+                keypad.memory = (byte)((value & 0xF0) | (keypad.memory & 0x0F));
+//                UnityEngine.Debug.LogFormat ("W {0} {1}", Convert.ToString (value, 2).PadLeft (8, '0'), Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
+                
                 return;
 
                 // timer

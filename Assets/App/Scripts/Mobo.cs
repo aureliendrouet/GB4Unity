@@ -28,7 +28,7 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Reset ()
         {
-            mmu.Reset ();
+            mmu.Reset (false);
             cpu.Reset ();
             apu.Reset ();
             gpu.Reset ();
@@ -58,6 +58,7 @@ namespace StudioKurage.Emulator.Gameboy
                 apu.Tick (cc);
                 gpu.Tick (cc, cpu.ime);
                 timer.Tick (cc);
+                keypad.Tick ();
             }
 
             return cc;

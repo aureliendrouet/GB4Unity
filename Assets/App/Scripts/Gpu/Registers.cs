@@ -200,6 +200,15 @@ namespace StudioKurage.Emulator.Gameboy
         // the x Position of the viewing area to start drawing the window from
         internal byte wx;
 
+        // background palette
+        internal byte bgp;
+
+        // object palette 0
+        internal byte obp0;
+
+        // object palette 1
+        internal byte obp1;
+
         #region Register Utility
 
         public LcdMode lcdMode;

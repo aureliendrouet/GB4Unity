@@ -24,21 +24,16 @@ namespace StudioKurage.Emulator.Gameboy
         {
         }
 
-        public virtual byte rb (ushort address)
+        public virtual void wb (int address, byte val)
+        {
+        }
+
+        public virtual byte rrb (int address)
         {
             return 0;
         }
 
-        public virtual void wb (ushort address, byte val)
-        {
-        }
-
-        public virtual byte rrb (ushort address)
-        {
-            return 0;
-        }
-
-        public virtual void rwb (ushort address, byte value)
+        public virtual void rwb (int address, byte value)
         {
         }
     }

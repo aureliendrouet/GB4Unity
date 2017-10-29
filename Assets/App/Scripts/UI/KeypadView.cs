@@ -20,20 +20,34 @@ namespace StudioKurage.Emulator.Gameboy
         public void Press (int index)
         {
             buttons [index].color = pressedColor;
-            mobo.keypad.Press (index);
+            if (index < 4) {
+                mobo.keypad.PressButton (index);
+            } else {
+                mobo.keypad.PressJoypad (index - 4);
+            }
             Refresh ();
         }
 
         public void Release (int index)
         {
             buttons [index].color = releasedColor;
-            mobo.keypad.Release (index);
+            if (index < 4) {
+                mobo.keypad.ReleaseButton (index);
+            } else {
+                mobo.keypad.ReleaseJoypad (index - 4);
+            }
             Refresh ();
         }
 
         void Refresh ()
         {
-            keysText.text = Convert.ToString (mobo.keypad.keys, 2).PadLeft(8, '0');
+            keysText.text = "";
+            for (int i = mobo.keypad.joypadKeys.Length - 1; i >= 0; i--) {
+                keysText.text += mobo.keypad.joypadKeys [i] ? "1" : "0";
+            }
+            for (int i = mobo.keypad.buttonKeys.Length - 1; i >= 0; i--) {
+                keysText.text += mobo.keypad.buttonKeys [i] ? "1" : "0";
+            }
             memoryText.text = Convert.ToString (mobo.keypad.memory, 2).PadLeft(8, '0');
         }
 
