@@ -420,7 +420,7 @@ namespace StudioKurage.Emulator.Gameboy
 
                 // keypad
             case Address.Keypad:
-                // UnityEngine.Debug.LogFormat ("R {0}", Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
+                 UnityEngine.Debug.LogFormat ("R {0}", Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
                 return keypad.memory;
 
                 // interrupt
@@ -491,8 +491,8 @@ namespace StudioKurage.Emulator.Gameboy
 
                 // keypad
             case Address.Keypad:
-                keypad.memory = (byte)((value & 0xF0) | (keypad.memory & 0x0F));
-//                UnityEngine.Debug.LogFormat ("W {0} {1}", Convert.ToString (value, 2).PadLeft (8, '0'), Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
+                keypad.memory = value;
+                UnityEngine.Debug.LogFormat ("W {0} {1}", Convert.ToString (value, 2).PadLeft (8, '0'), Convert.ToString (keypad.memory, 2).PadLeft (8, '0'));
                 
                 return;
 

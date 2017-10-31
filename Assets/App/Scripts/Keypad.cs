@@ -32,32 +32,35 @@ namespace StudioKurage.Emulator.Gameboy
 
         public void Tick()
         {
-            byte flag;
             if ((memory & KeypadFlag.Button) == 0) {
-                for (int i = 0; i < 4; i++) {
-                    flag = (byte)(1 << i);
+                for (int i = 3; i >= 0; i--) {
+                    byte flag = (byte)(1 << i);
 
                     if (buttonKeys [i]) {
                         // pressed
                         if ((memory & flag) == flag) {
                             mmu.RequestInterrupt (InterruptFlag.Joypad);
+                            Debug.Log ("Interrupt for button " + System.Convert.ToString(flag, 2) + " " + System.Convert.ToString(memory, 2));
                         }
                         memory &= (byte)~flag;
+                        Debug.Log (System.Convert.ToString(memory, 2).PadLeft(8, '0'));
                     } else {
                         // released
                         memory |= flag;
                     }
                 }
             } else if ((memory & KeypadFlag.Joypad) == 0) {
-                for (int i = 0; i < 4; i++) {
-                    flag = (byte)(1 << i);
+                for (int i = 3; i >= 0; i--) {
+                    byte flag = (byte)(1 << i);
 
                     if (joypadKeys [i]) {
                         // pressed
                         if ((memory & flag) == flag) {
                             mmu.RequestInterrupt (InterruptFlag.Joypad);
+                            Debug.Log ("Interrupt for joypad " + System.Convert.ToString(flag, 2) + " " + System.Convert.ToString(memory, 2));
                         }
                         memory &= (byte)~flag;
+                        Debug.Log (System.Convert.ToString(memory, 2).PadLeft(8, '0'));
                     } else {
                         // released
                         memory |= flag;
