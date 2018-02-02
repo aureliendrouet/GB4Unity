@@ -111,6 +111,35 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction DECHL = (_) => { _.hl --; };
         static Instruction DECSP = (_) => { _.sp --; };
 
+        static Instruction DAA = (_) => {
+            int a = _.a;
+
+            if (_.sf) {
+                if (_.hcf) {
+                    a = (a - 0x06) & 0xFF;
+                }
+                if (_.cf) {
+                    a = (a - 0x60) & 0xFF;
+                }
+            } else {
+                if (_.hcf || (a & 0xF) > 0x09) {
+                    a += 0x06;
+                }
+                if (_.cf || a > 0x9F) {
+                    a += 0x60;
+                }
+            }
+
+            _.hcf = false;
+            _.cf = a > 0xFF;
+
+            a &= 0xFF;
+
+            _.zf = (a == 0);
+
+            _.a = (byte)a;
+        };
+
         static void ADD(Cpu _, byte n) { byte a = _.a; _.a = (byte)(a + n); _.zf = _.a == 0; _.sf = false; _.hcf = (((a & 0x0F) + (n & 0x0F)) & 0x10) != 0; _.cf = (a + n) > 0xFF; }
 
         static void ADDW(Cpu _, ushort w) { ushort hl = _.hl; _.hl = (ushort)(hl + w); _.sf = false; _.hcf = (((hl & 0x0FFF) + (w & 0x0FFF)) & 0x1000) != 0; _.cf = (hl + w) > 0xFFFF; }
@@ -127,8 +156,8 @@ namespace StudioKurage.Emulator.Gameboy
 
         static void XOR(Cpu _, byte n) { _.a ^= n; _.zf = _.a == 0; _.sf = false; _.hcf = true; _.cf = false; }
 
-        static byte INC(Cpu _, byte r) { r ++; _.zf = r == 0; _.sf = false; _.hcf = (r & 0x0F) == 0x0F; return r; }
+        static byte INC(Cpu _, byte r) { _.hcf = (r & 0x0F) == 0x0F; r ++; _.zf = r == 0; _.sf = false; return r; }
 
-        static byte DEC(Cpu _, byte r) { r --; _.zf = r == 0; _.sf = true;  _.hcf = (r & 0x0F) == 0x0F; return r; }
+        static byte DEC(Cpu _, byte r) { _.hcf = (r & 0x0F) == 0x00; r --; _.zf = r == 0; _.sf = true;  return r; }
     }
 }

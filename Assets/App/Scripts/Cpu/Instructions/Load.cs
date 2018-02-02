@@ -106,16 +106,16 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction LDAHLD = (_) => { _.a = _.mmu.rb(_.hl); _.hl --; };
 
         // a = @(0xFF00 + @pc)
-        static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(0xFF00 + _.mmu.rb(_.pc++)); };
+        static Instruction LDAIOn = (_) => { _.a = _.mmu.rb(0xFF00 | _.mmu.rb(_.pc++)); };
 
         // @(0xFF00 + @pc) = a
-        static Instruction LDIOnA = (_) => { _.mmu.wb(0xFF00 + _.mmu.rb(_.pc++), _.a); };
+        static Instruction LDIOnA = (_) => { _.mmu.wb(0xFF00 | _.mmu.rb(_.pc++), _.a); };
 
         // a = @(0xFF00 + c)
-        static Instruction LDAIOC = (_) => { _.a = _.mmu.rb(0xFF00 + _.c); };
+        static Instruction LDAIOC = (_) => { _.a = _.mmu.rb(0xFF00 | _.c); };
 
         // @(0xFF00 + c) = a
-        static Instruction LDIOCA = (_) => { _.mmu.wb(0xFF00 + _.c, _.a); };
+        static Instruction LDIOCA = (_) => { _.mmu.wb(0xFF00 | _.c, _.a); };
         #endregion
 
         #region 16 bits loads

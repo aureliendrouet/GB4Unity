@@ -14,6 +14,6 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction CPn   = (_) => { CP(_, _.mmu.rb(_.pc++)); };
 
         // Compare with a
-        static void CP(Cpu _, byte n)  { _.zf = _.a == n; _.sf = true; _.hcf = (_.a & 0xf) < ((_.a - n) & 0xf); _.cf = _.a < n; }
+        static void CP(Cpu _, byte n)  { _.zf = _.a == n; _.sf = true; _.hcf = (_.a & 0x0F) < ((_.a - n) & 0x0F); _.cf = _.a < n; }
     }
 }

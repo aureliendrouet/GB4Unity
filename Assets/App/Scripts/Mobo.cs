@@ -23,6 +23,7 @@ namespace StudioKurage.Emulator.Gameboy
             keypad = new Keypad (mmu);
 
             mmu.SetComponents (gpu, timer, keypad);
+
             Reset ();
         }
 

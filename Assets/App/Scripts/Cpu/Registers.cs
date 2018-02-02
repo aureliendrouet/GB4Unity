@@ -51,14 +51,14 @@ namespace StudioKurage.Emulator.Gameboy
         #region stack utilities
         public byte popb()
         {
-            var value = mmu.rb(sp);
+            byte value = mmu.rb(sp);
             sp ++;
             return value;
         }
 
         public ushort popw()
         {
-            var value = mmu.rw(sp);
+            ushort value = mmu.rw(sp);
             sp += 2;
             return value;
         }

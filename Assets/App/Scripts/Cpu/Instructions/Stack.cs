@@ -11,6 +11,6 @@ namespace StudioKurage.Emulator.Gameboy
         static Instruction POPBC = (_) => { _.bc = _.popw(); };
         static Instruction POPDE = (_) => { _.de = _.popw(); };
         static Instruction POPHL = (_) => { _.hl = _.popw(); };
-        static Instruction POPAF = (_) => { _.af = _.popw(); };
+        static Instruction POPAF = (_) => { _.af = (ushort)((_.popw() & 0xFFF0) | (_.af & 0x000F)); };
     }
 }
